@@ -8,6 +8,11 @@ export const signin = async (credentials: any) => {
     return response.data;
 };
 
+export const signup = async (credentials: any) => {
+    const response = await axiosWithCredentials.post(`${USERS_API}/signup`, credentials);
+    return response.data;
+};
+
 export const profile = async () => {
     const response = await axiosWithCredentials.post(`${USERS_API}/profile`);
     return response.data;
