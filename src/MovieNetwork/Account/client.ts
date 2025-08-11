@@ -55,3 +55,13 @@ export const getReviewVoteById = async (reviewId: string) => {
     const response = await axiosWithCredentials.get(`${REVIEWVOTE_API}/${reviewId}`);
     return response.data;
 };
+
+export const getMoviePosterById = async (movieId: string) => {
+    const response = await axiosWithCredentials.get(`${MOVIES_API}/poster`, { params: { id: movieId } });
+    return response.data.url;
+};
+
+export const changePassword = async (passwordData: any, uid: string) => {
+    const response = await axiosWithCredentials.put(`${USERS_API}/${uid}/password`, passwordData);
+    return response.data;
+};

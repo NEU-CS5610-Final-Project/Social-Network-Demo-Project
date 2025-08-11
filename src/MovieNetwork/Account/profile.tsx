@@ -13,15 +13,17 @@ export default function Profile() {
     const [page, setPage] = useState("info");
     const [editable, setEditable] = useState(false);
     const { uid } = useParams();
+    const [changePassword, setChangePassword] = useState<any>({ oldPassword: "", newPassword: "" });
     const [profile, setProfile] = useState<any>({});
     const [isFollowed, setFollowed] = useState(false);
     const [editProfile, setEditProfile] = useState<any>({});
-    const formatReviewDate = (dateString: string) => {
-        if (!dateString) return 'Recent';
+    const [passwordErrorMessage, setPasswordErrorMessage] = useState<string>("");
+    const formatReviewDate = (reviewDate: string | Date) => {
+        if (!reviewDate) return 'Recent';
 
-        const reviewDate = new Date(dateString);
+        const date = new Date(reviewDate);
         const now = new Date();
-        const diffInMs = now.getTime() - reviewDate.getTime();
+        const diffInMs = now.getTime() - date.getTime();
 
         // convert to minutes and hours
         const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
@@ -33,7 +35,7 @@ export default function Profile() {
             return `${diffInHours} hours ago`;
         } else {
             // on or before yesterday
-            return reviewDate.toLocaleDateString('en-US', {
+            return date.toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric'
@@ -59,6 +61,33 @@ export default function Profile() {
                 title: titleMap.get(review.movie_id) || 'Unknown Movie'
             }));
         }
+        if (profile.liked && profile.liked.length > 0) {
+            const uniqueMovieIds = [...new Set(profile.liked)];
+
+            // get poster and title
+            const movieDataMap = new Map();
+            await Promise.all(uniqueMovieIds.map(async (movieId) => {
+                try {
+                    const [poster, title] = await Promise.all([
+                        client.getMoviePosterById(movieId as string),
+                        client.getMovieTitleById(movieId as string)
+                    ]);
+                    movieDataMap.set(movieId, { poster, title });
+                } catch (error) {
+                    console.error(`Failed to fetch data for movie ${movieId}:`, error);
+                    movieDataMap.set(movieId, { poster: 'Unknown Movie', title: 'Unknown Movie' });
+                }
+            }));
+
+            // Convert to array of objects
+            profile.liked = profile.liked.map((movieId: string) => {
+                const movieData = movieDataMap.get(movieId) || { poster: 'Unknown Movie', title: 'Unknown Movie' };
+                return {
+                    _id: movieId,
+                    ...movieData
+                };
+            });
+        }
         setProfile(profile);
         setEditProfile({ _id: uid, privacy: { ...profile.privacy } });
         if (profile.followers && currentUser) {
@@ -81,6 +110,16 @@ export default function Profile() {
     const unfollowUser = async (userid: string) => {
         await client.unfollowUser(userid);
         fetchProfile();
+    };
+    const savePassword = async () => {
+        try {
+            await client.changePassword(changePassword, uid as string);
+            setPasswordErrorMessage("Success! Password changed.");
+        } catch (error: any) {
+            setPasswordErrorMessage(error.response.data.message || "Failed to change password");
+        }
+
+        setChangePassword({ oldPassword: "", newPassword: "" });
     };
     useEffect(() => {
         fetchProfile();
@@ -247,11 +286,42 @@ export default function Profile() {
                         {page === "liked" && (
                             <div>
                                 <h3>Liked Movies</h3>
-                                {profile.liked.length > 0 ? (
-                                    <>
-                                        {/* TODO: Display liked movies */}
-                                    </>
-                                ) : (
+                                {profile.liked && profile.liked.length > 0 ? (
+                                    profile.liked.map((movie: any) => (
+                                        <div key={movie._id} className="col-3 col-md-3 col-lg-2">
+                                            <Card className="border-0 shadow-sm position-relative overflow-hidden"
+                                                style={{
+                                                    height: '300px',
+                                                    cursor: 'pointer',
+                                                    transition: 'transform 0.3s ease'
+                                                }}
+                                                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                                                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+
+                                                <img
+                                                    src={movie.poster}
+                                                    className="card-img h-100 w-100"
+                                                    alt={movie.title}
+                                                    style={{ objectFit: 'cover' }}
+                                                />
+
+                                                <div className="position-absolute bottom-0 start-0 w-100 p-3" style={{
+                                                    background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)',
+                                                    minHeight: '80px'
+                                                }}>
+                                                    <h6 className="text-white fw-bold mb-0 text-center fs-4" style={{
+                                                        textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                                                        display: '-webkit-box',
+                                                        WebkitLineClamp: 2,
+                                                        WebkitBoxOrient: 'vertical',
+                                                        overflow: 'hidden'
+                                                    }}>
+                                                        {movie.title}
+                                                    </h6>
+                                                </div>
+                                            </Card>
+                                        </div>
+                                    ))) : (
                                     <p>No liked movies found.</p>
                                 )}
                             </div>
@@ -375,7 +445,7 @@ export default function Profile() {
                                                     <div className="card-footer bg-transparent border-0 pt-0">
                                                         <small className="text-muted">
                                                             <i className="bi bi-clock me-1"></i>
-                                                            {formatReviewDate(review.review_date)}
+                                                            {formatReviewDate(review.update_time)}
                                                         </small>
                                                     </div>
                                                 </div>
@@ -389,125 +459,144 @@ export default function Profile() {
                         )}
                         {page === "privacy" && (
                             <div>
-                                <div className="d-flex justify-content-between align-items-center">
-                                    <h3>Privacy Settings</h3>
-                                    <Button variant="outline-success" onClick={saveProfile}>Save Changes</Button>
-                                </div>
-                                <br />
-                                <div className="d-flex mb-2">
-                                    <label className="col-2">Email</label>
-                                    <select
-                                        value={editProfile.privacy?.email || 0}
-                                        className="form-select"
-                                        onChange={(e) => setEditProfile({
-                                            ...editProfile,
-                                            privacy: {
-                                                ...editProfile.privacy,
-                                                email: parseInt(e.target.value)
-                                            }
-                                        })}>
-                                        <option value={0}>Public</option>
-                                        <option value={1}>Users Followed by Me</option>
-                                        <option value={2}>Only Me</option>
-                                    </select>
-                                </div>
-                                <div className="d-flex mb-2">
-                                    <label className="col-2">Bio</label>
-                                    <select
-                                        value={editProfile.privacy?.bio || 0}
-                                        className="form-select"
-                                        onChange={(e) => setEditProfile({
-                                            ...editProfile,
-                                            privacy: {
-                                                ...editProfile.privacy,
-                                                email: parseInt(e.target.value)
-                                            }
-                                        })}>
-                                        <option value={0}>Public</option>
-                                        <option value={1}>Users Followed by Me</option>
-                                        <option value={2}>Only Me</option>
-                                    </select>
-                                </div>
-                                <div className="d-flex mb-2">
-                                    <label className="col-2">Following List</label>
-                                    <select
-                                        value={editProfile.privacy?.following || 0}
-                                        className="form-select"
-                                        onChange={(e) => setEditProfile({
-                                            ...editProfile,
-                                            privacy: {
-                                                ...editProfile.privacy,
-                                                email: parseInt(e.target.value)
-                                            }
-                                        })}>
-                                        <option value={0}>Public</option>
-                                        <option value={1}>Users Followed by Me</option>
-                                        <option value={2}>Only Me</option>
-                                    </select>
-                                </div>
-                                <div className="d-flex mb-2">
-                                    <label className="col-2">Join Date</label>
-                                    <select
-                                        value={editProfile.privacy?.join_date || 0}
-                                        className="form-select"
-                                        onChange={(e) => setEditProfile({
-                                            ...editProfile,
-                                            privacy: {
-                                                ...editProfile.privacy,
-                                                email: parseInt(e.target.value)
-                                            }
-                                        })}>
-                                        <option value={0}>Public</option>
-                                        <option value={1}>Users Followed by Me</option>
-                                        <option value={2}>Only Me</option>
-                                    </select>
-                                </div>
-                                <div className="d-flex mb-2">
-                                    <label className="col-2">Liked</label>
-                                    <select
-                                        value={editProfile.privacy?.liked || 0}
-                                        className="form-select"
-                                        onChange={(e) => setEditProfile({
-                                            ...editProfile,
-                                            privacy: {
-                                                ...editProfile.privacy,
-                                                email: parseInt(e.target.value)
-                                            }
-                                        })}>
-                                        <option value={0}>Public</option>
-                                        <option value={1}>Users Followed by Me</option>
-                                        <option value={2}>Only Me</option>
-                                    </select>
-                                </div>
-                                <div className="d-flex mb-2">
-                                    <label className="col-2">Review</label>
-                                    <select
-                                        value={editProfile.privacy?.review || 0}
-                                        className="form-select"
-                                        onChange={(e) => setEditProfile({
-                                            ...editProfile,
-                                            privacy: {
-                                                ...editProfile.privacy,
-                                                email: parseInt(e.target.value)
-                                            }
-                                        })}>
-                                        <option value={0}>Public</option>
-                                        <option value={1}>Users Followed by Me</option>
-                                        <option value={2}>Only Me</option>
-                                    </select>
-                                </div>
+                                <Row className="border-bottom mb-2">
+                                    <div className="d-flex justify-content-between align-items-center mb-4">
+                                        <h3>Privacy Settings</h3>
+                                        <Button variant="outline-success" onClick={saveProfile}>Save Changes</Button>
+                                    </div>
+                                    <br />
+                                    <div className="d-flex mb-2">
+                                        <label className="col-2">Email</label>
+                                        <select
+                                            value={editProfile.privacy?.email || 0}
+                                            className="form-select"
+                                            onChange={(e) => setEditProfile({
+                                                ...editProfile,
+                                                privacy: {
+                                                    ...editProfile.privacy,
+                                                    email: parseInt(e.target.value)
+                                                }
+                                            })}>
+                                            <option value={0}>Public</option>
+                                            <option value={1}>Users Followed by Me</option>
+                                            <option value={2}>Only Me</option>
+                                        </select>
+                                    </div>
+                                    <div className="d-flex mb-2">
+                                        <label className="col-2">Bio</label>
+                                        <select
+                                            value={editProfile.privacy?.bio || 0}
+                                            className="form-select"
+                                            onChange={(e) => setEditProfile({
+                                                ...editProfile,
+                                                privacy: {
+                                                    ...editProfile.privacy,
+                                                    email: parseInt(e.target.value)
+                                                }
+                                            })}>
+                                            <option value={0}>Public</option>
+                                            <option value={1}>Users Followed by Me</option>
+                                            <option value={2}>Only Me</option>
+                                        </select>
+                                    </div>
+                                    <div className="d-flex mb-2">
+                                        <label className="col-2">Following List</label>
+                                        <select
+                                            value={editProfile.privacy?.following || 0}
+                                            className="form-select"
+                                            onChange={(e) => setEditProfile({
+                                                ...editProfile,
+                                                privacy: {
+                                                    ...editProfile.privacy,
+                                                    email: parseInt(e.target.value)
+                                                }
+                                            })}>
+                                            <option value={0}>Public</option>
+                                            <option value={1}>Users Followed by Me</option>
+                                            <option value={2}>Only Me</option>
+                                        </select>
+                                    </div>
+                                    <div className="d-flex mb-2">
+                                        <label className="col-2">Join Date</label>
+                                        <select
+                                            value={editProfile.privacy?.join_date || 0}
+                                            className="form-select"
+                                            onChange={(e) => setEditProfile({
+                                                ...editProfile,
+                                                privacy: {
+                                                    ...editProfile.privacy,
+                                                    email: parseInt(e.target.value)
+                                                }
+                                            })}>
+                                            <option value={0}>Public</option>
+                                            <option value={1}>Users Followed by Me</option>
+                                            <option value={2}>Only Me</option>
+                                        </select>
+                                    </div>
+                                    <div className="d-flex mb-2">
+                                        <label className="col-2">Liked</label>
+                                        <select
+                                            value={editProfile.privacy?.liked || 0}
+                                            className="form-select"
+                                            onChange={(e) => setEditProfile({
+                                                ...editProfile,
+                                                privacy: {
+                                                    ...editProfile.privacy,
+                                                    email: parseInt(e.target.value)
+                                                }
+                                            })}>
+                                            <option value={0}>Public</option>
+                                            <option value={1}>Users Followed by Me</option>
+                                            <option value={2}>Only Me</option>
+                                        </select>
+                                    </div>
+                                    <div className="d-flex mb-4">
+                                        <label className="col-2">Review</label>
+                                        <select
+                                            value={editProfile.privacy?.review || 0}
+                                            className="form-select"
+                                            onChange={(e) => setEditProfile({
+                                                ...editProfile,
+                                                privacy: {
+                                                    ...editProfile.privacy,
+                                                    email: parseInt(e.target.value)
+                                                }
+                                            })}>
+                                            <option value={0}>Public</option>
+                                            <option value={1}>Users Followed by Me</option>
+                                            <option value={2}>Only Me</option>
+                                        </select>
+                                    </div>
+                                </Row>
+                                <Row>
+                                    <h3 className="mb-4">Change Password</h3>
+                                    {passwordErrorMessage && (
+                                        <div className={`alert ${passwordErrorMessage === "Success! Password changed." ? "alert-success" : "alert-danger"} ms-2`} role="alert" style={{ width: "500px" }}>
+                                            {passwordErrorMessage}
+                                        </div>
+                                    )}
+                                    <div className="d-flex mb-2">
+                                        <label className="col-3">Old Password</label>
+                                        <Form.Control
+                                            type="password"
+                                            value={changePassword.oldPassword}
+                                            onChange={(e) => setChangePassword({ ...changePassword, oldPassword: e.target.value })} />
+                                    </div>
+                                    <div className="d-flex mb-4">
+                                        <label className="col-3">New Password</label>
+                                        <Form.Control
+                                            type="password"
+                                            value={changePassword.newPassword}
+                                            onChange={(e) => setChangePassword({ ...changePassword, newPassword: e.target.value })} />
+                                    </div>
+                                    <Button variant="danger" className="ms-3" style={{ width: "200px" }} onClick={savePassword}>Change Password</Button>
+                                </Row>
+                                <br /><br />
                             </div>
                         )}
                     </Col>
                 </Row>
             </Container>
-            {<div>
-                <pre className="text-muted mt-3 ms-5 me-5">
-                    {JSON.stringify(profile, null, 2)}
-                </pre>
-                <pre className="text-muted mt-3 ms-5 me-5">
-                    {JSON.stringify(editProfile, null, 2)}
-                </pre></div>}
         </div >
     )
 }
