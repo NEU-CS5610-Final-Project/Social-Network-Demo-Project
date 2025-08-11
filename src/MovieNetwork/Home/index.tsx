@@ -1,4 +1,6 @@
 import { useState } from "react";
+import TrendingNow from "./TrendingNow";
+// import TestLatestMovies from "./TestTestLatestMovies";
 
 export default function Home() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -30,28 +32,7 @@ export default function Home() {
                     {/* Latest Movies Section */}
                     <section>
                         <h2 className="text-center mb-4">Latest Movies</h2>
-                        <div className="row g-4"> {/*TODO: Implement latest movies fetching*/}
-                            {/*latestMovies.map((movie) => (
-                                <div key={movie.id} className="col-md-6 col-lg-3">
-                                    <div className="card movie-card h-100">
-                                        <img
-                                            src={movie.poster}
-                                            alt={movie.title}
-                                            className="card-img-top movie-poster"
-                                        />
-                                        <div className="card-body">
-                                            <h5 className="card-title">{movie.title}</h5>
-                                            <p className="card-text text-muted">
-                                                Release Date: {new Date(movie.releaseDate).toLocaleDateString()}
-                                            </p>
-                                            <p className="card-text small">
-                                                Cast: {movie.cast.join(', ')}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))*/}
-                        </div>
+                            <TrendingNow />
                     </section>
                 </div>
             </main>
