@@ -3,11 +3,10 @@ import Signin from "./signin";
 import Signup from "./signup";
 import Profile from "./profile";
 
-
 export default function Account() {
     return (
         <div>
-            <h2>Account</h2>
+            <br />
             <Routes>
                 <Route path="/" element={<Navigate to="/Account/signin" />} />
                 <Route path="/signin" element={<Signin />} />

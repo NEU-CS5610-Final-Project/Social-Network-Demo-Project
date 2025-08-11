@@ -1,33 +1,18 @@
 import { Navigate, Route, Routes } from "react-router"
-import AccountNavigation from "./Navigation"
-import Account from "./Account"
+import Home from "./Home";
 import Session from "./Account/Session"
+import Account from "./Account";
+import Banner from "./Home/banner";
 
 export default function MovieNetwork() {
     return (
         <Session>
-            <div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Movie Network</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td valign="top">
-                                <AccountNavigation />
-                            </td>
-                            <td>
-                                <Routes>
-                                    <Route path="/" element={<Navigate to="Account" />} />
-                                    <Route path="/Account/*" element={<Account />} />
-                                </Routes>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <Banner />
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/home" element={<Navigate to="/" />} />
+                <Route path="/Account/*" element={<Account />} />
+            </Routes>
         </Session>
     )
 }

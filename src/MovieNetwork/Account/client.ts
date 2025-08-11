@@ -13,6 +13,11 @@ export const signup = async (credentials: any) => {
     return response.data;
 };
 
+export const signout = async () => {
+    const response = await axiosWithCredentials.post(`${USERS_API}/signout`);
+    return response.data;
+};
+
 export const profile = async () => {
     const response = await axiosWithCredentials.post(`${USERS_API}/profile`);
     return response.data;
