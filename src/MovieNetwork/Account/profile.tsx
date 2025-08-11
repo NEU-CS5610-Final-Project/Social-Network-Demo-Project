@@ -1,21 +1,248 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import * as client from "./client"
+import { Button, Card, Col, Container, Row } from "react-bootstrap";
+import { useSelector } from "react-redux";
+import { BsFillInfoSquareFill } from "react-icons/bs";
+import { FaShieldAlt, FaHeart, FaUsers, FaCommentDots } from "react-icons/fa";
+import { FaUserCheck } from "react-icons/fa6";
+import { Form } from "react-bootstrap";
+
 
 export default function Profile() {
+    const { currentUser } = useSelector((state: any) => state.accountReducer);
+    const [page, setPage] = useState("info");
+    const [editable, setEditable] = useState(false);
     const { uid } = useParams();
     const [profile, setProfile] = useState<any>({});
+    const [editProfile, setEditProfile] = useState<any>({});
     const fetchProfile = async () => {
         const profile = await client.findProfile(uid as string);
         setProfile(profile);
     };
+    const saveProfile = async () => {
+        await client.updateProfile(editProfile);
+        setProfile({ ...profile, ...editProfile });
+        setEditProfile({ _id: uid });
+        setEditable(false);
+    };
+    const discardChanges = () => {
+        setEditProfile({ _id: uid });
+        setEditable(false);
+    };
     useEffect(() => {
         fetchProfile();
+        setEditProfile({ _id: uid });
     }, [uid]);
+    const isSelf = currentUser?._id === uid;
     return (
-        <div>
-            <h2>Profile</h2>
-            <pre>{JSON.stringify(profile, null, 2)}</pre>
-        </div>
+        <div className="bg-gray-50">
+            <div>
+                <div className="d-flex align-items-center bg-white shadow-sm" style={{ height: "60px", zIndex: 10 }}>
+                    <div className="ms-5">
+                        <h2>My Profile</h2>
+                    </div>
+                </div>
+                <div>
+                    <br />
+                    <Card className="bg-white ms-5 shadow-sm me-5">
+                        <Card.Body>
+                            <div className="text-center mb-3">
+                                <Link to={`/Account/profile/${profile._id}`}>
+                                    <img
+                                        src={`/avatar/${profile.avatar}.png` || "/avatar/default.png"}
+                                        alt="User Avatar"
+                                        className="rounded-circle border"
+                                        width="120"
+                                        height="120"
+                                        style={{ cursor: "pointer" }} />
+                                </Link>
+                            </div>
+                            <div className="text-center">
+                                <h2 className="mb-2">{profile.username}</h2>
+                                <p className="text-muted mb-1">{profile.email}</p>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </div>
+            </div>
+            <br />
+            <Container fluid>
+                <Row>
+                    <Col xs="auto" className="ms-5 border-end" style={{ width: '220px', minWidth: '220px' }}>
+                        <div onClick={() => setPage("info")} className="mb-2" style={{ cursor: "pointer" }}>
+                            <div className="d-flex align-items-center p-2 rounded" style={{
+                                transition: 'background-color 0.2s ease',
+                            }}
+                                onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#e9ecef'}
+                                onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = 'transparent'}>
+                                <BsFillInfoSquareFill className="fs-5 me-2" />
+                                Basic Information
+                            </div>
+                        </div>
+                        {(profile.liked || isSelf) && <div onClick={() => setPage("liked")} className="mb-2" style={{ cursor: "pointer" }}>
+                            <div className="d-flex align-items-center p-2 rounded" style={{
+                                transition: 'background-color 0.2s ease',
+                            }}
+                                onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#e9ecef'}
+                                onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = 'transparent'}>
+                                <FaHeart className="fs-5 me-2" />
+                                Liked Movie
+                            </div>
+                        </div>}
+                        {(profile.following || isSelf) && <div onClick={() => setPage("following")} className="mb-2" style={{ cursor: "pointer" }}>
+                            <div className="d-flex align-items-center p-2 rounded" style={{
+                                transition: 'background-color 0.2s ease',
+                            }}
+                                onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#e9ecef'}
+                                onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = 'transparent'}>
+                                <FaUserCheck className="fs-5 me-2" />
+                                Following
+                            </div>
+                        </div>}
+                        {(profile.follower || isSelf) && <div onClick={() => setPage("follower")} className="mb-2" style={{ cursor: "pointer" }}>
+                            <div className="d-flex align-items-center p-2 rounded" style={{
+                                transition: 'background-color 0.2s ease',
+                            }}
+                                onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#e9ecef'}
+                                onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = 'transparent'}>
+                                <FaUsers className="fs-5 me-2" />
+                                Follower
+                            </div>
+                        </div>}
+                        {(profile.reviews || isSelf) && <div onClick={() => setPage("review")} className="mb-2" style={{ cursor: "pointer" }}>
+                            <div className="d-flex align-items-center p-2 rounded" style={{
+                                transition: 'background-color 0.2s ease',
+                            }}
+                                onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#e9ecef'}
+                                onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = 'transparent'}>
+                                <FaCommentDots className="fs-5 me-2" />
+                                Reviews
+                            </div>
+                        </div>}
+                        {isSelf && <div onClick={() => setPage("privacy")} className="mb-2" style={{ cursor: "pointer" }}>
+                            <div className="d-flex align-items-center p-2 rounded" style={{
+                                transition: 'background-color 0.2s ease',
+                            }}
+                                onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#e9ecef'}
+                                onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = 'transparent'}>
+                                <FaShieldAlt className="fs-5 me-2" />
+                                Privacy Settings
+                            </div>
+                        </div>}
+                    </Col>
+                    <Col>
+                        {page === "info" && (
+                            <div>
+                                <div className="d-flex justify-content-between align-items-center">
+                                    <h3>Basic Information</h3>
+                                    {isSelf ? (editable ? (
+                                        <div>
+                                            <Button variant="success" onClick={saveProfile} className="me-2">Save</Button>
+                                            <Button variant="secondary" onClick={discardChanges}>Cancel</Button>
+                                        </div>
+                                    ) : (
+                                        <Button variant="primary" onClick={() => setEditable(true)}>Edit</Button>
+                                    )) : (null)}
+                                </div>
+                                <br />
+                                <div className="d-flex mb-2">
+                                    <label className="col-2">Username</label>
+                                    <Form.Control
+                                        type="text"
+                                        value={editProfile.username || profile.username}
+                                        readOnly={!editable}
+                                        className={editable ? "" : "bg-light"}
+                                        onChange={(e) => setEditProfile({ ...editProfile, username: e.target.value })} />
+                                </div>
+                                <div className="d-flex mb-2">
+                                    <label className="col-2">Email</label>
+                                    <Form.Control
+                                        type="email"
+                                        value={editProfile.email || profile.email}
+                                        readOnly={!editable}
+                                        className={editable ? "" : "bg-light"}
+                                        onChange={(e) => setEditProfile({ ...editProfile, email: e.target.value })} />
+                                </div>
+                                <div className="d-flex mb-2">
+                                    <label className="col-2">Bio</label>
+                                    <Form.Control
+                                        as="textarea"
+                                        value={editProfile.bio || profile.bio}
+                                        readOnly={!editable}
+                                        className={editable ? "" : "bg-light"}
+                                        onChange={(e) => setEditProfile({ ...editProfile, bio: e.target.value })} />
+                                </div>
+                                <div className="d-flex mb-2">
+                                    <label className="col-2">Join Date</label>
+                                    <Form.Control
+                                        type="date"
+                                        value={profile.join_date}
+                                        readOnly
+                                        className="bg-light" />
+                                </div>
+                            </div>
+                        )}
+                        {page === "liked" && (
+                            <div>
+                                <h3>Liked Movies</h3>
+                                {profile.liked.length > 0 ? (
+                                    <>
+                                        {/* TODO: Display liked movies */}
+                                    </>
+                                ) : (
+                                    <p>No liked movies found.</p>
+                                )}
+                            </div>
+                        )}
+                        {page === "following" && (
+                            <div>
+                                <h3>Following</h3>
+                                {profile.following.length > 0 ? (
+                                    <>
+                                        {/* TODO: Display following users */}
+                                    </>
+                                ) : (
+                                    <p>No following users found.</p>
+                                )}
+                            </div>
+                        )}
+                        {page === "follower" && (
+                            <div>
+                                <h3>Follower</h3>
+                                {profile.followers.length > 0 ? (
+                                    <>
+                                        {/* TODO: Display follower users */}
+                                    </>
+                                ) : (
+                                    <p>No follower users found.</p>
+                                )}
+                            </div>
+                        )}
+                        {page === "review" && (
+                            <div>
+                                <h3>Reviews</h3>
+                                {profile.reviews.length > 0 ? (
+                                    <>
+                                        {/* TODO: Display user reviews */}
+                                    </>
+                                ) : (
+                                    <p>No reviews found.</p>
+                                )}
+                            </div>
+                        )}
+                        {page === "privacy" && (
+                            <div>
+                                <h3>Privacy Settings</h3>
+                                {/* TODO: Display privacy settings */}
+                            </div>
+                        )}
+                    </Col>
+                </Row>
+            </Container>
+            {/*<pre className="text-muted mt-3 ms-5 me-5">
+                {JSON.stringify(profile, null, 2)}
+            </pre>*/}
+        </div >
     )
 }
