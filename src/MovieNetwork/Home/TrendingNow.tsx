@@ -1,6 +1,6 @@
 // src/components/HotNow.tsx  — Bootstrap 版
 import { useEffect, useState } from "react";
-import { getLatestMovies } from "./Client";
+import { getPopularMovies } from "./Client";
 
 type Movie = {
   id: number;
@@ -27,7 +27,7 @@ export default function TrendingNow() {
 
   useEffect(() => {
     (async () => {
-      const results = await getLatestMovies();
+      const results = await getPopularMovies();
       setList(results.slice(0, 10));
     })();
   }, []);

@@ -31,8 +31,8 @@ export default function Home() {
 
                     {/* Latest Movies Section */}
                     <section>
-                        <h2 className="text-center mb-4">Latest Movies</h2>
-                            <TrendingNow />
+                        <h2 className="text-center mb-4">Popular Movies</h2>
+                        <TrendingNow />
                     </section>
                 </div>
             </main>
