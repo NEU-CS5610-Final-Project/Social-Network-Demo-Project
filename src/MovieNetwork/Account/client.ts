@@ -1,6 +1,7 @@
 import axios from "axios";
 export const REMOTE_SERVER = import.meta.env.VITE_REMOTE_SERVER;
 export const USERS_API = `${REMOTE_SERVER}/api/users`;
+export const FOLLOW_API = `${REMOTE_SERVER}/api/follow`;
 const axiosWithCredentials = axios.create({ withCredentials: true });
 
 export const signin = async (credentials: any) => {
@@ -30,5 +31,15 @@ export const profile = async () => {
 
 export const findProfile = async (uid: string) => {
     const response = await axiosWithCredentials.get(`${USERS_API}/profile/${uid}`);
+    return response.data;
+};
+
+export const followUser = async (uid: string) => {
+    const response = await axiosWithCredentials.post(`${FOLLOW_API}/${uid}`);
+    return response.data;
+};
+
+export const unfollowUser = async (uid: string) => {
+    const response = await axiosWithCredentials.delete(`${FOLLOW_API}/${uid}`);
     return response.data;
 };

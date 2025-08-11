@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import * as client from "./client"
-import { Button, Card, Col, Container, Row } from "react-bootstrap";
+import { Button, Card, Col, Container, Row, Table } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { BsFillInfoSquareFill } from "react-icons/bs";
 import { FaShieldAlt, FaHeart, FaUsers, FaCommentDots } from "react-icons/fa";
@@ -30,6 +30,14 @@ export default function Profile() {
         setEditProfile({ _id: uid });
         setEditable(false);
     };
+    const followUser = async () => {
+        await client.followUser(uid as string);
+        fetchProfile();
+    };
+    const unfollowUser = async (userid: string) => {
+        await client.unfollowUser(userid);
+        fetchProfile();
+    };
     useEffect(() => {
         fetchProfile();
         setEditProfile({ _id: uid });
@@ -38,9 +46,18 @@ export default function Profile() {
     return (
         <div className="bg-gray-50">
             <div>
-                <div className="d-flex align-items-center bg-white shadow-sm" style={{ height: "60px", zIndex: 10 }}>
-                    <div className="ms-5">
-                        <h2>My Profile</h2>
+                <div className="d-flex align-items-center justify-content-between bg-white shadow-sm" style={{ height: "60px", zIndex: 10 }}>
+                    <div className="ms-5 d-flex align-items-center justify-content-between w-100">
+                        {isSelf ? <h2>My Profile</h2> : (
+                            <>
+                                <h2>{profile.username}'s Profile</h2>
+                                {profile.followers.some((user: any) => user._id === currentUser._id) ? (
+                                    <Button className="me-2" variant="warning" onClick={() => unfollowUser(profile._id)}>Unfollow</Button>
+                                ) : (
+                                    <Button className="me-2" variant="success" onClick={() => followUser()}>Follow</Button>
+                                )}
+                            </>
+                        )}
                     </div>
                 </div>
                 <div>
@@ -100,7 +117,7 @@ export default function Profile() {
                                 Following
                             </div>
                         </div>}
-                        {(profile.follower || isSelf) && <div onClick={() => setPage("follower")} className="mb-2" style={{ cursor: "pointer" }}>
+                        {(profile.followers || isSelf) && <div onClick={() => setPage("follower")} className="mb-2" style={{ cursor: "pointer" }}>
                             <div className="d-flex align-items-center p-2 rounded" style={{
                                 transition: 'background-color 0.2s ease',
                             }}
@@ -198,25 +215,88 @@ export default function Profile() {
                         {page === "following" && (
                             <div>
                                 <h3>Following</h3>
-                                {profile.following.length > 0 ? (
-                                    <>
-                                        {/* TODO: Display following users */}
-                                    </>
-                                ) : (
-                                    <p>No following users found.</p>
-                                )}
+                                <Table striped hover>
+                                    <tbody>
+                                        {profile.following.length > 0 ? (
+                                            profile.following.map((user: any) => (
+                                                <tr key={user._id}>
+                                                    <td className="align-middle" style={{ width: '80px' }}>
+                                                        <Link to={`/Account/profile/${user._id}`}>
+                                                            <img
+                                                                src={`/avatar/${user.avatar}.png` || "/avatar/default.png"}
+                                                                alt="User Avatar"
+                                                                className="rounded-circle"
+                                                                width="50"
+                                                                height="50"
+                                                                style={{ cursor: "pointer" }}
+                                                            />
+                                                        </Link>
+                                                    </td>
+                                                    <td className="align-middle">
+                                                        <div>
+                                                            <h6 className="mb-1">{user.username}</h6>
+                                                        </div>
+                                                    </td>
+                                                    {isSelf && <td className="align-middle text-end">
+                                                        <Button variant="outline-secondary" size="sm" onClick={() => unfollowUser(user._id)}>
+                                                            Unfollow
+                                                        </Button>
+                                                    </td>}
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={3} className="text-center text-muted py-4">
+                                                    <div>
+                                                        <i className="bi bi-people fs-1 mb-2"></i>
+                                                        <p className="mb-0">No following users found.</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </Table>
                             </div>
                         )}
                         {page === "follower" && (
                             <div>
                                 <h3>Follower</h3>
-                                {profile.followers.length > 0 ? (
-                                    <>
-                                        {/* TODO: Display follower users */}
-                                    </>
-                                ) : (
-                                    <p>No follower users found.</p>
-                                )}
+                                <Table striped hover>
+                                    <tbody>
+                                        {profile.followers.length > 0 ? (
+                                            profile.followers.map((user: any) => (
+                                                <tr key={user._id}>
+                                                    <td className="align-middle" style={{ width: '80px' }}>
+                                                        <Link to={`/Account/profile/${user._id}`}>
+                                                            <img
+                                                                src={`/avatar/${user.avatar}.png` || "/avatar/default.png"}
+                                                                alt="User Avatar"
+                                                                className="rounded-circle"
+                                                                width="50"
+                                                                height="50"
+                                                                style={{ cursor: "pointer" }}
+                                                            />
+                                                        </Link>
+                                                    </td>
+                                                    <td className="align-middle">
+                                                        <div>
+                                                            <h6 className="mb-1">{user.username}</h6>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={3} className="text-center text-muted py-4">
+                                                    <div>
+                                                        <i className="bi bi-people fs-1 mb-2"></i>
+                                                        <p className="mb-0">No followers found.</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </Table>
                             </div>
                         )}
                         {page === "review" && (
@@ -240,9 +320,9 @@ export default function Profile() {
                     </Col>
                 </Row>
             </Container>
-            {/*<pre className="text-muted mt-3 ms-5 me-5">
+            {<pre className="text-muted mt-3 ms-5 me-5">
                 {JSON.stringify(profile, null, 2)}
-            </pre>*/}
+            </pre>}
         </div >
     )
 }
