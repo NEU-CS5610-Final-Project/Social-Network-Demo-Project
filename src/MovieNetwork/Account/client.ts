@@ -2,6 +2,8 @@ import axios from "axios";
 export const REMOTE_SERVER = import.meta.env.VITE_REMOTE_SERVER;
 export const USERS_API = `${REMOTE_SERVER}/api/users`;
 export const FOLLOW_API = `${REMOTE_SERVER}/api/follow`;
+export const MOVIES_API = `${REMOTE_SERVER}/api/tmdb`;
+export const REVIEWVOTE_API = `${REMOTE_SERVER}/api/reviewvote`;
 const axiosWithCredentials = axios.create({ withCredentials: true });
 
 export const signin = async (credentials: any) => {
@@ -41,5 +43,15 @@ export const followUser = async (uid: string) => {
 
 export const unfollowUser = async (uid: string) => {
     const response = await axiosWithCredentials.delete(`${FOLLOW_API}/${uid}`);
+    return response.data;
+};
+
+export const getMovieTitleById = async (movieId: string) => {
+    const response = await axiosWithCredentials.get(`${MOVIES_API}/details/${movieId}`);
+    return response.data.title;
+};
+
+export const getReviewVoteById = async (reviewId: string) => {
+    const response = await axiosWithCredentials.get(`${REVIEWVOTE_API}/${reviewId}`);
     return response.data;
 };

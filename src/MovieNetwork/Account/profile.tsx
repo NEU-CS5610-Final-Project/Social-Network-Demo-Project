@@ -8,26 +8,70 @@ import { FaShieldAlt, FaHeart, FaUsers, FaCommentDots } from "react-icons/fa";
 import { FaUserCheck } from "react-icons/fa6";
 import { Form } from "react-bootstrap";
 
-
 export default function Profile() {
     const { currentUser } = useSelector((state: any) => state.accountReducer);
     const [page, setPage] = useState("info");
     const [editable, setEditable] = useState(false);
     const { uid } = useParams();
     const [profile, setProfile] = useState<any>({});
+    const [isFollowed, setFollowed] = useState(false);
     const [editProfile, setEditProfile] = useState<any>({});
+    const formatReviewDate = (dateString: string) => {
+        if (!dateString) return 'Recent';
+
+        const reviewDate = new Date(dateString);
+        const now = new Date();
+        const diffInMs = now.getTime() - reviewDate.getTime();
+
+        // convert to minutes and hours
+        const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+        const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+
+        if (diffInMinutes < 60) {
+            return `${diffInMinutes} minutes ago`;
+        } else if (diffInHours < 24) {
+            return `${diffInHours} hours ago`;
+        } else {
+            // on or before yesterday
+            return reviewDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+    };
     const fetchProfile = async () => {
         const profile = await client.findProfile(uid as string);
+        if (profile.reviews && profile.reviews.length > 0) {
+            // get unique movie_id
+            const uniqueMovieIds = [...new Set(profile.reviews.map((review: any) => review.movie_id))];
+
+            // get movie titles
+            const titleMap = new Map();
+            await Promise.all(uniqueMovieIds.map(async (movieId) => {
+                const title = await client.getMovieTitleById(movieId as string);
+                titleMap.set(movieId, title);
+            }));
+
+            // add titles to each review
+            profile.reviews = profile.reviews.map((review: any) => ({
+                ...review,
+                title: titleMap.get(review.movie_id) || 'Unknown Movie'
+            }));
+        }
         setProfile(profile);
+        setEditProfile({ _id: uid, privacy: { ...profile.privacy } });
+        if (profile.followers && currentUser) {
+            setFollowed(profile.followers.some((user: any) => user._id === currentUser._id));
+        }
     };
     const saveProfile = async () => {
         await client.updateProfile(editProfile);
-        setProfile({ ...profile, ...editProfile });
-        setEditProfile({ _id: uid });
+        fetchProfile();
         setEditable(false);
     };
     const discardChanges = () => {
-        setEditProfile({ _id: uid });
+        setEditProfile({ _id: uid, privacy: { ...profile.privacy } });
         setEditable(false);
     };
     const followUser = async () => {
@@ -40,7 +84,7 @@ export default function Profile() {
     };
     useEffect(() => {
         fetchProfile();
-        setEditProfile({ _id: uid });
+        setPage("info");
     }, [uid]);
     const isSelf = currentUser?._id === uid;
     return (
@@ -51,7 +95,7 @@ export default function Profile() {
                         {isSelf ? <h2>My Profile</h2> : (
                             <>
                                 <h2>{profile.username}'s Profile</h2>
-                                {profile.followers.some((user: any) => user._id === currentUser._id) ? (
+                                {isFollowed ? (
                                     <Button className="me-2" variant="warning" onClick={() => unfollowUser(profile._id)}>Unfollow</Button>
                                 ) : (
                                     <Button className="me-2" variant="success" onClick={() => followUser()}>Follow</Button>
@@ -176,7 +220,7 @@ export default function Profile() {
                                     <label className="col-2">Email</label>
                                     <Form.Control
                                         type="email"
-                                        value={editProfile.email || profile.email}
+                                        value={editProfile.email || profile.email || ""}
                                         readOnly={!editable}
                                         className={editable ? "" : "bg-light"}
                                         onChange={(e) => setEditProfile({ ...editProfile, email: e.target.value })} />
@@ -185,7 +229,7 @@ export default function Profile() {
                                     <label className="col-2">Bio</label>
                                     <Form.Control
                                         as="textarea"
-                                        value={editProfile.bio || profile.bio}
+                                        value={editProfile.bio || profile.bio || ""}
                                         readOnly={!editable}
                                         className={editable ? "" : "bg-light"}
                                         onChange={(e) => setEditProfile({ ...editProfile, bio: e.target.value })} />
@@ -194,7 +238,7 @@ export default function Profile() {
                                     <label className="col-2">Join Date</label>
                                     <Form.Control
                                         type="date"
-                                        value={profile.join_date}
+                                        value={profile.join_date || ""}
                                         readOnly
                                         className="bg-light" />
                                 </div>
@@ -215,9 +259,9 @@ export default function Profile() {
                         {page === "following" && (
                             <div>
                                 <h3>Following</h3>
-                                <Table striped hover>
+                                <Table hover>
                                     <tbody>
-                                        {profile.following.length > 0 ? (
+                                        {profile.following && (profile.following.length > 0 ? (
                                             profile.following.map((user: any) => (
                                                 <tr key={user._id}>
                                                     <td className="align-middle" style={{ width: '80px' }}>
@@ -253,7 +297,7 @@ export default function Profile() {
                                                     </div>
                                                 </td>
                                             </tr>
-                                        )}
+                                        ))}
                                     </tbody>
                                 </Table>
                             </div>
@@ -261,7 +305,7 @@ export default function Profile() {
                         {page === "follower" && (
                             <div>
                                 <h3>Follower</h3>
-                                <Table striped hover>
+                                <Table hover>
                                     <tbody>
                                         {profile.followers.length > 0 ? (
                                             profile.followers.map((user: any) => (
@@ -303,9 +347,41 @@ export default function Profile() {
                             <div>
                                 <h3>Reviews</h3>
                                 {profile.reviews.length > 0 ? (
-                                    <>
-                                        {/* TODO: Display user reviews */}
-                                    </>
+                                    <div>
+                                        {profile.reviews.map((review: any) => (
+                                            <div key={review._id} className="col-md-6 col-lg-4 mb-3">
+                                                <div className="card h-100 shadow-sm border-0">
+                                                    <div className="card-header bg-light border-0">
+                                                        <h6 className="mb-0 text-primary fw-bold">
+                                                            {review.title}
+                                                        </h6>
+                                                    </div>
+
+                                                    <div className="card-body">
+                                                        <blockquote className="blockquote mb-0">
+                                                            <p className="mb-0" style={{
+                                                                fontSize: '0.9rem',
+                                                                lineHeight: '1.4',
+                                                                display: '-webkit-box',
+                                                                WebkitLineClamp: 4,
+                                                                WebkitBoxOrient: 'vertical',
+                                                                overflow: 'hidden'
+                                                            }}>
+                                                                "{review.content}"
+                                                            </p>
+                                                        </blockquote>
+                                                    </div>
+
+                                                    <div className="card-footer bg-transparent border-0 pt-0">
+                                                        <small className="text-muted">
+                                                            <i className="bi bi-clock me-1"></i>
+                                                            {formatReviewDate(review.review_date)}
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 ) : (
                                     <p>No reviews found.</p>
                                 )}
@@ -313,16 +389,125 @@ export default function Profile() {
                         )}
                         {page === "privacy" && (
                             <div>
-                                <h3>Privacy Settings</h3>
-                                {/* TODO: Display privacy settings */}
+                                <div className="d-flex justify-content-between align-items-center">
+                                    <h3>Privacy Settings</h3>
+                                    <Button variant="outline-success" onClick={saveProfile}>Save Changes</Button>
+                                </div>
+                                <br />
+                                <div className="d-flex mb-2">
+                                    <label className="col-2">Email</label>
+                                    <select
+                                        value={editProfile.privacy?.email || 0}
+                                        className="form-select"
+                                        onChange={(e) => setEditProfile({
+                                            ...editProfile,
+                                            privacy: {
+                                                ...editProfile.privacy,
+                                                email: parseInt(e.target.value)
+                                            }
+                                        })}>
+                                        <option value={0}>Public</option>
+                                        <option value={1}>Users Followed by Me</option>
+                                        <option value={2}>Only Me</option>
+                                    </select>
+                                </div>
+                                <div className="d-flex mb-2">
+                                    <label className="col-2">Bio</label>
+                                    <select
+                                        value={editProfile.privacy?.bio || 0}
+                                        className="form-select"
+                                        onChange={(e) => setEditProfile({
+                                            ...editProfile,
+                                            privacy: {
+                                                ...editProfile.privacy,
+                                                email: parseInt(e.target.value)
+                                            }
+                                        })}>
+                                        <option value={0}>Public</option>
+                                        <option value={1}>Users Followed by Me</option>
+                                        <option value={2}>Only Me</option>
+                                    </select>
+                                </div>
+                                <div className="d-flex mb-2">
+                                    <label className="col-2">Following List</label>
+                                    <select
+                                        value={editProfile.privacy?.following || 0}
+                                        className="form-select"
+                                        onChange={(e) => setEditProfile({
+                                            ...editProfile,
+                                            privacy: {
+                                                ...editProfile.privacy,
+                                                email: parseInt(e.target.value)
+                                            }
+                                        })}>
+                                        <option value={0}>Public</option>
+                                        <option value={1}>Users Followed by Me</option>
+                                        <option value={2}>Only Me</option>
+                                    </select>
+                                </div>
+                                <div className="d-flex mb-2">
+                                    <label className="col-2">Join Date</label>
+                                    <select
+                                        value={editProfile.privacy?.join_date || 0}
+                                        className="form-select"
+                                        onChange={(e) => setEditProfile({
+                                            ...editProfile,
+                                            privacy: {
+                                                ...editProfile.privacy,
+                                                email: parseInt(e.target.value)
+                                            }
+                                        })}>
+                                        <option value={0}>Public</option>
+                                        <option value={1}>Users Followed by Me</option>
+                                        <option value={2}>Only Me</option>
+                                    </select>
+                                </div>
+                                <div className="d-flex mb-2">
+                                    <label className="col-2">Liked</label>
+                                    <select
+                                        value={editProfile.privacy?.liked || 0}
+                                        className="form-select"
+                                        onChange={(e) => setEditProfile({
+                                            ...editProfile,
+                                            privacy: {
+                                                ...editProfile.privacy,
+                                                email: parseInt(e.target.value)
+                                            }
+                                        })}>
+                                        <option value={0}>Public</option>
+                                        <option value={1}>Users Followed by Me</option>
+                                        <option value={2}>Only Me</option>
+                                    </select>
+                                </div>
+                                <div className="d-flex mb-2">
+                                    <label className="col-2">Review</label>
+                                    <select
+                                        value={editProfile.privacy?.review || 0}
+                                        className="form-select"
+                                        onChange={(e) => setEditProfile({
+                                            ...editProfile,
+                                            privacy: {
+                                                ...editProfile.privacy,
+                                                email: parseInt(e.target.value)
+                                            }
+                                        })}>
+                                        <option value={0}>Public</option>
+                                        <option value={1}>Users Followed by Me</option>
+                                        <option value={2}>Only Me</option>
+                                    </select>
+                                </div>
                             </div>
                         )}
                     </Col>
                 </Row>
             </Container>
-            {<pre className="text-muted mt-3 ms-5 me-5">
-                {JSON.stringify(profile, null, 2)}
-            </pre>}
+            {<div>
+                <pre className="text-muted mt-3 ms-5 me-5">
+                    {JSON.stringify(profile, null, 2)}
+                </pre>
+                <pre className="text-muted mt-3 ms-5 me-5">
+                    {JSON.stringify(editProfile, null, 2)}
+                </pre></div>}
         </div >
     )
 }
