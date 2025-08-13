@@ -498,7 +498,7 @@ export default function Profile() {
                                                 ...editProfile,
                                                 privacy: {
                                                     ...editProfile.privacy,
-                                                    email: parseInt(e.target.value)
+                                                    bio: parseInt(e.target.value)
                                                 }
                                             })}>
                                             <option value={0}>Public</option>
@@ -515,7 +515,7 @@ export default function Profile() {
                                                 ...editProfile,
                                                 privacy: {
                                                     ...editProfile.privacy,
-                                                    email: parseInt(e.target.value)
+                                                    following: parseInt(e.target.value)
                                                 }
                                             })}>
                                             <option value={0}>Public</option>
@@ -532,7 +532,7 @@ export default function Profile() {
                                                 ...editProfile,
                                                 privacy: {
                                                     ...editProfile.privacy,
-                                                    email: parseInt(e.target.value)
+                                                    join_date: parseInt(e.target.value)
                                                 }
                                             })}>
                                             <option value={0}>Public</option>
@@ -549,7 +549,7 @@ export default function Profile() {
                                                 ...editProfile,
                                                 privacy: {
                                                     ...editProfile.privacy,
-                                                    email: parseInt(e.target.value)
+                                                    liked: parseInt(e.target.value)
                                                 }
                                             })}>
                                             <option value={0}>Public</option>
@@ -566,7 +566,7 @@ export default function Profile() {
                                                 ...editProfile,
                                                 privacy: {
                                                     ...editProfile.privacy,
-                                                    email: parseInt(e.target.value)
+                                                    review: parseInt(e.target.value)
                                                 }
                                             })}>
                                             <option value={0}>Public</option>
