@@ -38,3 +38,33 @@ export const getMovieVotes = async (movieId: string) => {
     const response = await axiosWithCredentials.get(`${REMOTE_SERVER}/api/movievotes/${movieId}/count`);
     return response.data;
 };
+
+// Get user's voted reviews
+export const getUserVotedReviews = async (uid: string) => {
+    const response = await axiosWithCredentials.get(`${REMOTE_SERVER}/api/users/${uid}/votedReviews`);
+    return response.data;
+};
+
+// Get user's voted movies
+export const getUserVotedMovies = async (uid: string) => {
+    const response = await axiosWithCredentials.get(`${REMOTE_SERVER}/api/users/${uid}/votedMovies`);
+    return response.data;
+};
+
+// Get review vote count
+export const getReviewVoteCount = async (reviewId: string) => {
+    const response = await axiosWithCredentials.get(`${REMOTE_SERVER}/api/reviewvote/${reviewId}`);
+    return response.data;
+};
+
+// Vote for a review
+export const voteReview = async (reviewId: string) => {
+    const response = await axiosWithCredentials.put(`${REMOTE_SERVER}/api/reviewvote/${reviewId}`);
+    return response;
+};
+
+// Unvote for a review
+export const unvoteReview = async (reviewId: string) => {
+    const response = await axiosWithCredentials.delete(`${REMOTE_SERVER}/api/reviewvote/${reviewId}`);
+    return response;
+};

@@ -1,5 +1,3 @@
-// React 17+ JSX doesn't need explicit React import
-
 type Genre = {
   id?: number;
   name: string;
