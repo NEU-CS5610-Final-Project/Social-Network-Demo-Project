@@ -1,4 +1,4 @@
-import { HashRouter } from 'react-router'
+import { HashRouter } from 'react-router-dom'
 import MovieNetwork from './MovieNetwork'
 import { Provider } from 'react-redux'
 import store from './MovieNetwork/store'

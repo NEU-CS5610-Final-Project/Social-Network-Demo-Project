@@ -40,3 +40,121 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Movie Search Styles */
+.movie-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+}
+
+.movie-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.movie-poster {
+  transition: transform 0.3s ease-in-out;
+}
+
+.movie-card:hover .movie-poster {
+  transform: scale(1.05);
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.card-text {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Search form styles */
+.input-group .form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Loading and error states */
+.text-danger {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+/* Navigation Search Bar Styles */
+.navbar .input-group {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar .form-control {
+  border-radius: 20px 0 0 20px;
+  border: 1px solid #dee2e6;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.navbar .form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  z-index: 3;
+}
+
+.navbar .btn {
+  border-radius: 0 20px 20px 0;
+  border: 1px solid #dee2e6;
+  border-left: none;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  background-color: #f8f9fa;
+  color: #495057;
+  transition: all 0.2s ease-in-out;
+}
+
+.navbar .btn:hover {
+  background-color: #e9ecef;
+  color: #212529;
+  border-color: #adb5bd;
+}
+
+.navbar .btn:focus {
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  z-index: 3;
+}
+
+/* Responsive adjustments for navigation search */
+@media (max-width: 768px) {
+  .navbar .input-group {
+    max-width: 300px !important;
+  }
+  
+  .navbar .form-control,
+  .navbar .btn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .navbar .input-group {
+    max-width: 250px !important;
+  }
+}
