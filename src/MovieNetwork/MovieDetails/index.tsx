@@ -86,14 +86,14 @@ export default function MovieDetails() {
   return (
     <div className="container py-5">
       {/* Back Button */}
-      <div className="mb-4">
+      {searchParams.get('returnTo') && <div className="mb-4">
         <button
           onClick={handleBack}
           className="btn btn-outline-secondary"
         >
           ← Back to Search Results
         </button>
-      </div>
+      </div>}
 
       <MovieInfo movie={movie} />
       <MovieReviews reviews={reviews} movieId={movieId!} />

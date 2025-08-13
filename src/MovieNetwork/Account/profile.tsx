@@ -286,44 +286,49 @@ export default function Profile() {
                         {page === "liked" && (
                             <div>
                                 <h3>Liked Movies</h3>
-                                {profile.liked && profile.liked.length > 0 ? (
-                                    profile.liked.map((movie: any) => (
-                                        <div key={movie._id} className="col-3 col-md-3 col-lg-2">
-                                            <Card className="border-0 shadow-sm position-relative overflow-hidden"
-                                                style={{
-                                                    height: '300px',
-                                                    cursor: 'pointer',
-                                                    transition: 'transform 0.3s ease'
-                                                }}
-                                                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
-                                                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                                <div className="row g-3">
+                                    {profile.liked && profile.liked.length > 0 ? (
+                                        profile.liked.map((movie: any) => (
+                                            <div key={movie._id} className="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2">
+                                                <Link to={`/movie/${movie._id}`}>
+                                                    <Card className="border-0 shadow-sm position-relative overflow-hidden"
+                                                        style={{
+                                                            height: '300px',
+                                                            cursor: 'pointer',
+                                                            transition: 'transform 0.3s ease'
+                                                        }}
+                                                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                                                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
 
-                                                <img
-                                                    src={movie.poster}
-                                                    className="card-img h-100 w-100"
-                                                    alt={movie.title}
-                                                    style={{ objectFit: 'cover' }}
-                                                />
+                                                        <img
+                                                            src={movie.poster}
+                                                            className="card-img h-100 w-100"
+                                                            alt={movie.title}
+                                                            style={{ objectFit: 'cover' }}
+                                                        />
 
-                                                <div className="position-absolute bottom-0 start-0 w-100 p-3" style={{
-                                                    background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)',
-                                                    minHeight: '80px'
-                                                }}>
-                                                    <h6 className="text-white fw-bold mb-0 text-center fs-4" style={{
-                                                        textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                                                        display: '-webkit-box',
-                                                        WebkitLineClamp: 2,
-                                                        WebkitBoxOrient: 'vertical',
-                                                        overflow: 'hidden'
-                                                    }}>
-                                                        {movie.title}
-                                                    </h6>
-                                                </div>
-                                            </Card>
-                                        </div>
-                                    ))) : (
-                                    <p>No liked movies found.</p>
-                                )}
+                                                        <div className="position-absolute bottom-0 start-0 w-100 p-3" style={{
+                                                            background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)',
+                                                            minHeight: '80px'
+                                                        }}>
+                                                            <h6 className="text-white fw-bold mb-0 text-center fs-4" style={{
+                                                                textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                                                                display: '-webkit-box',
+                                                                WebkitLineClamp: 2,
+                                                                WebkitBoxOrient: 'vertical',
+                                                                overflow: 'hidden'
+                                                            }}>
+                                                                {movie.title}
+                                                            </h6>
+                                                        </div>
+                                                    </Card>
+                                                </Link>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p>No liked movies found.</p>
+                                    )}
+                                </div>
                             </div>
                         )}
                         {page === "following" && (
@@ -417,13 +422,15 @@ export default function Profile() {
                             <div>
                                 <h3>Reviews</h3>
                                 {profile.reviews.length > 0 ? (
-                                    <div>
+                                    <div className="row g-3">
                                         {profile.reviews.map((review: any) => (
                                             <div key={review._id} className="col-md-6 col-lg-4 mb-3">
                                                 <div className="card h-100 shadow-sm border-0">
                                                     <div className="card-header bg-light border-0">
                                                         <h6 className="mb-0 text-primary fw-bold">
-                                                            {review.title}
+                                                            <Link to={`/movie/${review.movie_id}`} className="text-decoration-none text-primary">
+                                                                {review.title}
+                                                            </Link>
                                                         </h6>
                                                     </div>
 
@@ -597,6 +604,6 @@ export default function Profile() {
                     </Col>
                 </Row>
             </Container>
-        </div >
+        </div>
     )
 }
