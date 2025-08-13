@@ -59,14 +59,14 @@ export default function MovieInfo({ movie }: { movie: MovieDetailsData }) {
   const getUserMovieRating = async () => {
     if (!currentUser?._id) return;
     const rating = await client.getUserMovieRating(movie.id.toString());
-    setUserRating(rating.rating ? rating.rating : 0);
-    setRating(rating.rating ? rating.rating : 0);
+    setUserRating(rating?.rating != null ? rating.rating : 0);
+    setRating(rating?.rating != null ? rating.rating : 0);
   };
 
   // Get movie average rating
   const getMovieAverageRating = async () => {
     const averageRating = await client.getMovieAverageRating(movie.id.toString());
-    setAverageRating(averageRating[0].averageRating);
+    setAverageRating(averageRating[0]?.averageRating != null ? averageRating[0].averageRating : 0);
   };
 
   //movie rating
