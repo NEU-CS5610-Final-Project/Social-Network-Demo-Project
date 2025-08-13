@@ -15,7 +15,6 @@ export default function MovieNetwork() {
                 <Route path="/home" element={<Navigate to="/" />} />
                 <Route path="/Account/*" element={<Account />} />
                 <Route path="/movie/:movieId" element={<MovieDetails />} />
-
             </Routes>
         </Session>
     )

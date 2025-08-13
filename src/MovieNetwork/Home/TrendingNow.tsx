@@ -1,6 +1,6 @@
-// src/components/HotNow.tsx  — Bootstrap 版
 import { useEffect, useState } from "react";
 import { getPopularMovies } from "./Client";
+import { Link } from "react-router-dom";
 
 type Movie = {
   id: number;
@@ -38,7 +38,7 @@ export default function TrendingNow() {
       <div className="row row-cols-2 row-cols-sm-3 row-cols-lg-5 g-4">
         {list.map((m) => (
           <div className="col" key={m.id}>
-            <a href={`/details/${m.id}`} className="text-decoration-none">
+            <Link to={`/movie/${m.id}`} className="text-decoration-none">
               <div className="card bg-dark border-0">
                 <div
                   className="position-relative overflow-hidden rounded"
@@ -64,13 +64,13 @@ export default function TrendingNow() {
 
                 <div className="card-body px-0">
                   <div className="d-flex align-items-baseline gap-2">
-                    <a
-                      href={`/details/${m.id}`}
+                    <Link
+                     to={`/movie/${m.id}`}
                       className="text-info small text-truncate flex-grow-1"
                       title={m.title}
                     >
                       {m.title}
-                    </a>
+                    </Link>
                     {typeof m.vote_average === "number" && (
                       <span className="small" style={{ color: "#f2b01e" }}>
                         {m.vote_average.toFixed(1)}
@@ -79,7 +79,7 @@ export default function TrendingNow() {
                   </div>
                 </div>
               </div>
-            </a>
+            </Link>
           </div>
         ))}
       </div>
