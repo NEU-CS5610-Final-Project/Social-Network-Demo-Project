@@ -1,20 +1,42 @@
-import { Container, Navbar } from "react-bootstrap";
+import { Container, Navbar, Form, Button, InputGroup } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import * as accountClient from "../Account/client";
 import { setCurrentUser } from "../Account/reducer";
-//
+
 export default function Banner() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { currentUser } = useSelector((state: any) => state.accountReducer);
+    const [searchQuery, setSearchQuery] = useState("");
+    const location = useLocation();
+    const isAccountPage = location.pathname.includes("/Account");
+    const isHomePage = location.pathname === "/" || location.pathname === "/home";
+
     const Signout = async () => {
         await accountClient.signout();
         dispatch(setCurrentUser(null));
         navigate("/Account/signin");
     }
-    const location = useLocation();
-    const isSignPage = location.pathname.includes("/Account/signin") || location.pathname.includes("/Account/signup");
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        if (!searchQuery.trim()) {
+            return;
+        }
+
+        // Navigate to home page with search query
+        navigate(`/?q=${encodeURIComponent(searchQuery.trim())}&page=1`);
+        setSearchQuery(""); // Clear search input after navigation
+    };
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") {
+            handleSearch(e);
+        }
+    };
     return (
         <Navbar bg="light" className="shadow-sm">
             <Container className="d-flex justify-content-between align-items-center">
@@ -27,6 +49,32 @@ export default function Banner() {
                             height="50" />
                     </Link>
                 </div>
+
+                {/* Search Bar - Only show when not on home page or account page */}
+                {!isHomePage && !isAccountPage && (
+                    <div className="flex-grow-1 mx-4" style={{ maxWidth: "500px" }}>
+                        <Form onSubmit={handleSearch}>
+                            <InputGroup>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Search movies..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyPress={handleKeyPress}
+                                    className="border-end-0"
+                                />
+                                <Button 
+                                    type="submit" 
+                                    variant="outline-secondary"
+                                    className="border-start-0"
+                                >
+                                    <i className="bi bi-search"></i>
+                                    Search
+                                </Button>
+                            </InputGroup>
+                        </Form>
+                    </div>
+                )}
 
                 {/* buttons */}
                 <div className="d-flex align-items-center gap-3">
