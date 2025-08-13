@@ -14,7 +14,7 @@ export default function Banner() {
         navigate("/Account/signin");
     }
     const location = useLocation();
-    const isAccountPage = location.pathname.includes("/Account");
+    const isSignPage = location.pathname.includes("/Account/signin") || location.pathname.includes("/Account/signup");
     return (
         <Navbar bg="light" className="shadow-sm">
             <Container className="d-flex justify-content-between align-items-center">
@@ -47,7 +47,7 @@ export default function Banner() {
                                 Logout
                             </button>
                         </div>
-                    ) : (isAccountPage ? null :
+                    ) : (isSignPage ? null :
                         <div>
                             <Link to="/Account/signin" className="btn btn-primary me-2">
                                 Sign In
