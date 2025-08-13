@@ -22,7 +22,7 @@ export default function Banner() {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!searchQuery.trim()) {
             return;
         }
@@ -63,8 +63,8 @@ export default function Banner() {
                                     onKeyPress={handleKeyPress}
                                     className="border-end-0"
                                 />
-                                <Button 
-                                    type="submit" 
+                                <Button
+                                    type="submit"
                                     variant="outline-secondary"
                                     className="border-start-0"
                                 >
@@ -95,7 +95,7 @@ export default function Banner() {
                                 Logout
                             </button>
                         </div>
-                    ) : (isSignPage ? null :
+                    ) : (isAccountPage ? null :
                         <div>
                             <Link to="/Account/signin" className="btn btn-primary me-2">
                                 Sign In

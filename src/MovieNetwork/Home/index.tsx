@@ -21,7 +21,7 @@ export default function Home() {
     useEffect(() => {
         const queryFromUrl = searchParams.get('q');
         const pageFromUrl = searchParams.get('page');
-        
+
         if (queryFromUrl) {
             setSearchQuery(queryFromUrl);
             setSearchedQuery(queryFromUrl); // Set the searched query as well
@@ -57,7 +57,7 @@ export default function Home() {
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!searchQuery.trim()) {
             setSearchError("Please enter a search keyword");
             return;
@@ -65,7 +65,7 @@ export default function Home() {
 
         // Update URL with search query
         setSearchParams({ q: searchQuery.trim(), page: '1' });
-        
+
         // Perform the search
         await performSearch(searchQuery.trim(), 1);
     };
@@ -78,13 +78,13 @@ export default function Home() {
 
     const handlePageChange = async (newPage: number) => {
         if (newPage < 1 || newPage > totalPages) return;
-        
+
         // Update URL with new page
         setSearchParams({ q: searchedQuery, page: newPage.toString() });
-        
+
         // Perform search for new page
         await performSearch(searchedQuery, newPage);
-        
+
         // Scroll to top of results
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -96,7 +96,7 @@ export default function Home() {
         const currentSearch = window.location.search;
         const currentHash = window.location.hash;
         const returnPath = currentPath + currentSearch + currentHash;
-        
+
         console.log("Saving return path:", returnPath);
         navigate(`/movie/${movieId}?returnTo=${encodeURIComponent(returnPath)}`);
     };
@@ -132,16 +132,16 @@ export default function Home() {
                                         onKeyPress={handleKeyPress}
                                         disabled={isSearching}
                                     />
-                                    <button 
-                                        type="submit" 
+                                    <button
+                                        type="submit"
                                         className="btn btn-primary btn-lg"
                                         disabled={isSearching}
                                     >
                                         {isSearching ? "Searching..." : "Search"}
                                     </button>
                                     {hasSearched && (
-                                        <button 
-                                            type="button" 
+                                        <button
+                                            type="button"
                                             className="btn btn-outline-secondary"
                                             onClick={clearSearch}
                                         >
@@ -164,7 +164,7 @@ export default function Home() {
                             <h2 className="text-center mb-4">
                                 {isSearching ? "Searching..." : `Search Results for "${searchedQuery}" (${totalResults} movies found)`}
                             </h2>
-                            
+
                             {!isSearching && searchResults.length === 0 && !searchError && (
                                 <div className="text-center text-muted">
                                     <p>No movies found for "{searchedQuery}", please try different keywords</p>
@@ -176,7 +176,7 @@ export default function Home() {
                                     <div className="row g-4">
                                         {searchResults.map((movie) => (
                                             <div key={movie.id} className="col-md-6 col-lg-3">
-                                                <div 
+                                                <div
                                                     className="card movie-card h-100"
                                                     onClick={() => handleMovieClick(movie.id)}
                                                     style={{ cursor: 'pointer' }}
@@ -193,10 +193,10 @@ export default function Home() {
                                                             }}
                                                         />
                                                     ) : (
-                                                        <div 
+                                                        <div
                                                             className="card-img-top d-flex align-items-center justify-content-center"
-                                                            style={{ 
-                                                                height: "300px", 
+                                                            style={{
+                                                                height: "300px",
                                                                 backgroundColor: "#f8f9fa",
                                                                 color: "#6c757d",
                                                                 fontSize: "1.2rem",
@@ -222,7 +222,7 @@ export default function Home() {
                                             </div>
                                         ))}
                                     </div>
-                                    
+
                                     {/* Pagination */}
                                     {totalPages > 1 && (
                                         <div className="d-flex justify-content-center mt-5">
@@ -230,15 +230,15 @@ export default function Home() {
                                                 <ul className="pagination">
                                                     {/* Previous button */}
                                                     <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                                        <button 
-                                                            className="page-link" 
+                                                        <button
+                                                            className="page-link"
                                                             onClick={() => handlePageChange(currentPage - 1)}
                                                             disabled={currentPage === 1}
                                                         >
                                                             Previous
                                                         </button>
                                                     </li>
-                                                    
+
                                                     {/* Page numbers */}
                                                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                                                         let pageNum;
@@ -251,11 +251,11 @@ export default function Home() {
                                                         } else {
                                                             pageNum = currentPage - 2 + i;
                                                         }
-                                                        
+
                                                         return (
                                                             <li key={pageNum} className={`page-item ${currentPage === pageNum ? 'active' : ''}`}>
-                                                                <button 
-                                                                    className="page-link" 
+                                                                <button
+                                                                    className="page-link"
                                                                     onClick={() => handlePageChange(pageNum)}
                                                                 >
                                                                     {pageNum}
@@ -263,11 +263,11 @@ export default function Home() {
                                                             </li>
                                                         );
                                                     })}
-                                                    
+
                                                     {/* Next button */}
                                                     <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                                                        <button 
-                                                            className="page-link" 
+                                                        <button
+                                                            className="page-link"
                                                             onClick={() => handlePageChange(currentPage + 1)}
                                                             disabled={currentPage === totalPages}
                                                         >
@@ -278,11 +278,11 @@ export default function Home() {
                                             </nav>
                                         </div>
                                     )}
-                                    
+
                                     {/* Page info */}
                                     <div className="text-center text-muted mt-3">
                                         <small>
-                                            Showing page {currentPage} of {totalPages} 
+                                            Showing page {currentPage} of {totalPages}
                                             ({searchResults.length} movies per page)
                                         </small>
                                     </div>
@@ -293,13 +293,9 @@ export default function Home() {
 
                     {/* Latest Movies Section - Only show when not searching */}
                     {!hasSearched && (
-                        <section>
+                        < section >
                             <h2 className="text-center mb-4">Latest Movies</h2>
-                            <div className="row g-4">
-                                <div className="col-12 text-center text-muted">
-                                    <p>Use the search box above to find movies you're interested in</p>
-                                </div>
-                            </div>
+                            <TrendingNow />
                         </section>
                     )}
                 </div>
