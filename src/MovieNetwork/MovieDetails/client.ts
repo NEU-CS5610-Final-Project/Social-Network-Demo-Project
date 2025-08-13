@@ -68,3 +68,27 @@ export const unvoteReview = async (reviewId: string) => {
     const response = await axiosWithCredentials.delete(`${REMOTE_SERVER}/api/reviewvote/${reviewId}`);
     return response;
 };
+
+// Get movie rating by movie ID
+export const getUserMovieRating = async (movieId: string) => {
+    const response = await axiosWithCredentials.get(`${REMOTE_SERVER}/api/movievotes/${movieId}/currentUser`);
+    return response.data;
+};
+
+// Vote for a movie
+export const voteMovie = async (movieId: string, voteData: any) => {
+    const response = await axiosWithCredentials.post(`${REMOTE_SERVER}/api/movievotes/${movieId}`, voteData);
+    return response;
+};
+
+// Unvote for a movie
+export const unvoteMovie = async (movieId: string) => {
+    const response = await axiosWithCredentials.delete(`${REMOTE_SERVER}/api/movievotes/${movieId}`);
+    return response;
+};
+
+// Get movie average rating
+export const getMovieAverageRating = async (movieId: string) => {
+    const response = await axiosWithCredentials.get(`${REMOTE_SERVER}/api/movievotes/${movieId}/average`);
+    return response.data;
+};

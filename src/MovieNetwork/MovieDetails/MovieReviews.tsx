@@ -50,7 +50,7 @@ export default function MovieReviews({ reviews, movieId }: { reviews: Review[]; 
   const fetchVotedReviews = async () => {
     if (!currentUser?._id) return;
     const voted = await client.getUserVotedReviews(currentUser._id);
-    setVotedReviews(voted.votedReviews);
+    setVotedReviews(voted.voted_review);
   };
 
   // Add user info and vote count for all comments
@@ -211,7 +211,7 @@ export default function MovieReviews({ reviews, movieId }: { reviews: Review[]; 
                 <div style={{ whiteSpace: "pre-wrap" }} className="ms-2 mb-2">{r.content}</div>
 
                 {/* vote button */}
-                <div className="d-flex justify-content-between align-items-center mt-2">
+                {isSignedIn && <div className="d-flex justify-content-between align-items-center mt-2">
                   <small className="text-muted">
                     <i className="bi bi-clock me-1"></i>
                     {formatReviewDate(r.update_time)}
@@ -233,7 +233,7 @@ export default function MovieReviews({ reviews, movieId }: { reviews: Review[]; 
                     )}
                     <span className="small">{r.voteCount || 0}</span>
                   </button>
-                </div>
+                </div>}
               </li>
             );
           })}

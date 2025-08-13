@@ -39,19 +39,19 @@ export default function MovieDetails() {
     const returnTo = searchParams.get('returnTo');
     console.log("ReturnTo parameter:", returnTo);
     console.log("Current location:", window.location.href);
-    
+
     if (returnTo) {
       try {
         // Decode the URL first
         const decodedReturnTo = decodeURIComponent(returnTo);
         console.log("Decoded returnTo:", decodedReturnTo);
-        
+
         // For hash routing, we need to handle the hash part specially
         if (decodedReturnTo.includes('#')) {
           // Extract everything after the hash
           const hashPart = decodedReturnTo.split('#')[1];
           console.log("Hash part:", hashPart);
-          
+
           // Navigate to the hash route
           console.log("Navigating to hash route:", hashPart);
           navigate(hashPart);
@@ -60,7 +60,7 @@ export default function MovieDetails() {
           const url = new URL(decodedReturnTo, window.location.origin);
           const pathWithSearch = url.pathname + url.search;
           console.log("Parsed path with search:", pathWithSearch);
-          
+
           // Navigate to the parsed path
           navigate(pathWithSearch);
         }
@@ -87,14 +87,14 @@ export default function MovieDetails() {
     <div className="container py-5">
       {/* Back Button */}
       <div className="mb-4">
-        <button 
+        <button
           onClick={handleBack}
           className="btn btn-outline-secondary"
         >
           ← Back to Search Results
         </button>
       </div>
-      
+
       <MovieInfo movie={movie} />
       <MovieReviews reviews={reviews} movieId={movieId!} />
     </div>

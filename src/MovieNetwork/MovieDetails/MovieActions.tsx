@@ -43,7 +43,7 @@ export default function MovieActions({ movie, currentUser }: Props) {
     <section className="mb-4">
 
       {!isSignedIn ? (
-        <div className="text-muted small mt-2">Login to like, comment and rate</div>
+        <div className="text-muted small mt-2">Login to like, comment and rate.</div>
       ) : (
         <div className="d-flex align-items-center gap-2">
           <button
