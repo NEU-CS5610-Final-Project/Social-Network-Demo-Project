@@ -92,3 +92,15 @@ export const getMovieAverageRating = async (movieId: string) => {
     const response = await axiosWithCredentials.get(`${REMOTE_SERVER}/api/movievotes/${movieId}/average`);
     return response.data;
 };
+
+// Delete a review
+export const deleteReview = async (reviewId: string) => {
+    const response = await axiosWithCredentials.delete(`${REMOTE_SERVER}/api/reviews/${reviewId}`);
+    return response.data;
+};
+
+// Update a review
+export const updateReview = async (reviewId: string, data: any) => {
+    const response = await axiosWithCredentials.put(`${REMOTE_SERVER}/api/reviews/${reviewId}`, data);
+    return response.data;
+};
