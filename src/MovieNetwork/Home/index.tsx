@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { searchMovies, getPosterUrl, type MovieSearchResult } from "../Search/client";
+import { fetchUsersByName } from "../Account/client";
 import TrendingNow from "./TrendingMovies/TrendingNow";
 import LatestReview from "./LatestReview/LatestReview";
 import Footer from "./Footer/footer";
@@ -8,7 +9,9 @@ import Footer from "./Footer/footer";
 export default function Home() {
     const [searchQuery, setSearchQuery] = useState("");
     const [searchedQuery, setSearchedQuery] = useState(""); // Store the actual searched query
+    const [searchType, setSearchType] = useState<"movies" | "users">("movies");
     const [searchResults, setSearchResults] = useState<MovieSearchResult[]>([]);
+    const [userSearchResults, setUserSearchResults] = useState<any[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [searchError, setSearchError] = useState<string | null>(null);
     const [hasSearched, setHasSearched] = useState(false);
@@ -22,19 +25,33 @@ export default function Home() {
     useEffect(() => {
         const queryFromUrl = searchParams.get('q');
         const pageFromUrl = searchParams.get('page');
+        const typeFromUrl = searchParams.get('type') as "movies" | "users" || "movies";
 
         if (queryFromUrl) {
             setSearchQuery(queryFromUrl);
             setSearchedQuery(queryFromUrl); // Set the searched query as well
+            setSearchType(typeFromUrl);
             setHasSearched(true);
             const page = pageFromUrl ? parseInt(pageFromUrl) : 1;
             setCurrentPage(page);
             // Perform the search automatically
-            performSearch(queryFromUrl, page);
+            performSearch(queryFromUrl, page, typeFromUrl);
+        } else {
+            // Clear search state when no query in URL
+            setSearchQuery("");
+            setSearchedQuery("");
+            setSearchType("movies");
+            setSearchResults([]);
+            setUserSearchResults([]);
+            setHasSearched(false);
+            setSearchError(null);
+            setCurrentPage(1);
+            setTotalPages(1);
+            setTotalResults(0);
         }
-    }, []);
+    }, [searchParams]);
 
-    const performSearch = async (query: string, page: number = 1) => {
+    const performSearch = async (query: string, page: number = 1, type: "movies" | "users" = "movies") => {
         setIsSearching(true);
         setSearchError(null);
         setHasSearched(true);
@@ -42,13 +59,23 @@ export default function Home() {
         setSearchedQuery(query); // Update the searched query when performing search
 
         try {
-            const results = await searchMovies(query.trim(), page);
-            setSearchResults(results.results);
-            setTotalPages(results.total_pages);
-            setTotalResults(results.total_results);
+            if (type === "movies") {
+                const results = await searchMovies(query.trim(), page);
+                setSearchResults(results.results);
+                setTotalPages(results.total_pages);
+                setTotalResults(results.total_results);
+                setUserSearchResults([]);
+            } else {
+                const results = await fetchUsersByName(query.trim());
+                setUserSearchResults(results);
+                setSearchResults([]);
+                setTotalPages(1);
+                setTotalResults(results.length);
+            }
         } catch (error) {
             setSearchError("Search failed, please try again later");
             setSearchResults([]);
+            setUserSearchResults([]);
             setTotalPages(1);
             setTotalResults(0);
         } finally {
@@ -64,11 +91,11 @@ export default function Home() {
             return;
         }
 
-        // Update URL with search query
-        setSearchParams({ q: searchQuery.trim(), page: '1' });
+        // Update URL with search query and type
+        setSearchParams({ q: searchQuery.trim(), page: '1', type: searchType });
 
         // Perform the search
-        await performSearch(searchQuery.trim(), 1);
+        await performSearch(searchQuery.trim(), 1, searchType);
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -81,10 +108,10 @@ export default function Home() {
         if (newPage < 1 || newPage > totalPages) return;
 
         // Update URL with new page
-        setSearchParams({ q: searchedQuery, page: newPage.toString() });
+        setSearchParams({ q: searchedQuery, page: newPage.toString(), type: searchType });
 
         // Perform search for new page
-        await performSearch(searchedQuery, newPage);
+        await performSearch(searchedQuery, newPage, searchType);
 
         // Scroll to top of results
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -102,10 +129,17 @@ export default function Home() {
         navigate(`/movie/${movieId}?returnTo=${encodeURIComponent(returnPath)}`);
     };
 
+    const handleUserClick = (userId: string) => {
+        // Navigate to user profile
+        navigate(`/Account/profile/${userId}`);
+    };
+
     const clearSearch = () => {
         setSearchQuery("");
         setSearchedQuery("");
+        setSearchType("movies");
         setSearchResults([]);
+        setUserSearchResults([]);
         setHasSearched(false);
         setSearchError(null);
         setCurrentPage(1);
@@ -122,12 +156,22 @@ export default function Home() {
                     {/* Search Section */}
                     <section className="mb-5 text-center">
                         <form onSubmit={handleSearch} className="row justify-content-center">
-                            <div className="col-md-6">
+                            <div className="col-md-8">
                                 <div className="input-group">
+                                    <select
+                                        className="form-select form-select-lg"
+                                        style={{ maxWidth: "120px" }}
+                                        value={searchType}
+                                        onChange={(e) => setSearchType(e.target.value as "movies" | "users")}
+                                        disabled={isSearching}
+                                    >
+                                        <option value="movies">Movies</option>
+                                        <option value="users">Users</option>
+                                    </select>
                                     <input
                                         type="text"
                                         className="form-control form-control-lg"
-                                        placeholder="Search movies..."
+                                        placeholder={`Search ${searchType}...`}
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         onKeyPress={handleKeyPress}
@@ -163,16 +207,17 @@ export default function Home() {
                     {hasSearched && (
                         <section className="mb-5">
                             <h2 className="text-center mb-4">
-                                {isSearching ? "Searching..." : `Search Results for "${searchedQuery}" (${totalResults} movies found)`}
+                                {isSearching ? "Searching..." : `Search Results for "${searchedQuery}" (${totalResults} ${searchType} found)`}
                             </h2>
 
-                            {!isSearching && searchResults.length === 0 && !searchError && (
+                            {!isSearching && totalResults === 0 && !searchError && (
                                 <div className="text-center text-muted">
-                                    <p>No movies found for "{searchedQuery}", please try different keywords</p>
+                                    <p>No {searchType} found for "{searchedQuery}", please try different keywords</p>
                                 </div>
                             )}
 
-                            {searchResults.length > 0 && (
+                            {/* Movie Search Results */}
+                            {searchType === "movies" && searchResults.length > 0 && (
                                 <>
                                     <div className="row g-4">
                                         {searchResults.map((movie) => (
@@ -224,7 +269,7 @@ export default function Home() {
                                         ))}
                                     </div>
 
-                                    {/* Pagination */}
+                                    {/* Pagination for Movies */}
                                     {totalPages > 1 && (
                                         <div className="d-flex justify-content-center mt-5">
                                             <nav aria-label="Search results pagination">
@@ -280,14 +325,53 @@ export default function Home() {
                                         </div>
                                     )}
 
-                                    {/* Page info */}
-                                    <div className="text-center text-muted mt-3">
-                                        <small>
-                                            Showing page {currentPage} of {totalPages}
-                                            ({searchResults.length} movies per page)
-                                        </small>
-                                    </div>
+                                    {/* Page info for Movies */}
+                                    {totalPages > 1 && (
+                                        <div className="text-center text-muted mt-3">
+                                            <small>
+                                                Showing page {currentPage} of {totalPages}
+                                                ({searchResults.length} movies per page)
+                                            </small>
+                                        </div>
+                                    )}
                                 </>
+                            )}
+
+                            {/* User Search Results */}
+                            {searchType === "users" && userSearchResults.length > 0 && (
+                                <div className="row g-4">
+                                    {userSearchResults.map((user) => (
+                                        <div key={user._id} className="col-md-6 col-lg-4">
+                                            <div
+                                                className="card user-card h-100"
+                                                onClick={() => handleUserClick(user._id)}
+                                                style={{ cursor: 'pointer' }}
+                                            >
+                                                <div className="card-body text-center">
+                                                    <div className="mb-3">
+                                                        <img
+                                                            src={`/avatar/${user.avatar || 'default'}.png`}
+                                                            alt={user.username}
+                                                            className="rounded-circle border"
+                                                            width="80"
+                                                            height="80"
+                                                            style={{ objectFit: 'cover' }}
+                                                        />
+                                                    </div>
+                                                    <h5 className="card-title">{user.username}</h5>
+                                                    <p className="card-text text-muted">
+                                                        Role: {user.role || 'User'}
+                                                    </p>
+                                                    {user.join_date && (
+                                                        <p className="card-text small text-muted">
+                                                            Joined: {new Date(user.join_date).toLocaleDateString('en-US')}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             )}
                         </section>
                     )}
@@ -295,7 +379,7 @@ export default function Home() {
                     {/* Latest Movies Section - Only show when not searching */}
                     {!hasSearched && (
                         < section >
-                            <h2 className="text-center mb-4">Latest Movies</h2>
+                            <h2 className="text-center mb-4">Trending Now</h2>
                             <TrendingNow />
                             <LatestReview limit={5} />
                         </section>
