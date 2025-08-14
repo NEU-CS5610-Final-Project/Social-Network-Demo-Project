@@ -117,7 +117,7 @@ export default function LatestReview({ limit = 5 }: { limit?: number }) {
                 <div className="d-flex gap-3">
                   {/* Avatar */}
                   <img
-                    src={r.author?.avatar || "https://via.placeholder.com/56?text=U"}
+                    src={`/avatar/${r.author?.avatar}.png` || "https://via.placeholder.com/56?text=U"}
                     alt={r.author?.username || "User"}
                     className="rounded-circle flex-shrink-0"
                     width={56}
