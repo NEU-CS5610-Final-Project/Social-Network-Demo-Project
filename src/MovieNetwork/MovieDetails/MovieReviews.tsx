@@ -218,7 +218,7 @@ export default function MovieReviews({ reviews, movieId }: { reviews: Review[]; 
                 <div className="d-flex align-items-center mb-2">
                   <div className="me-3">
                     <img
-                      src={`/avatar/${r.user?.avatar}.png` || "/avatar/default.png"}
+                      src={`/avatar/${r.user?.avatar || 'default'}.png`}
                       alt={r.user?.username || "User"}
                       className="rounded-circle"
                       onClick={() => r.user?._id && navigateToUserProfile(r.user._id)}

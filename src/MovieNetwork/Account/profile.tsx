@@ -113,6 +113,10 @@ export default function Profile() {
         await client.unfollowUser(userid);
         fetchProfile();
     };
+    const deleteFollower = async (followerId: string) => {
+        await client.deleteFollower(followerId);
+        fetchProfile();
+    };
     const savePassword = async () => {
         try {
             await client.changePassword(changePassword, uid as string);
@@ -354,16 +358,27 @@ export default function Profile() {
                                             profile.following.map((user: any) => (
                                                 <tr key={user._id}>
                                                     <td className="align-middle" style={{ width: '80px' }}>
-                                                        <Link to={`/Account/profile/${user._id}`}>
+                                                        {user._id ? (
+                                                            <Link to={`/Account/profile/${user._id}`}>
+                                                                <img
+                                                                    src={`/avatar/${user.avatar}.png` || "/avatar/default.png"}
+                                                                    alt="User Avatar"
+                                                                    className="rounded-circle"
+                                                                    width="50"
+                                                                    height="50"
+                                                                    style={{ cursor: "pointer" }}
+                                                                />
+                                                            </Link>
+                                                        ) : (
                                                             <img
                                                                 src={`/avatar/${user.avatar}.png` || "/avatar/default.png"}
                                                                 alt="User Avatar"
                                                                 className="rounded-circle"
                                                                 width="50"
                                                                 height="50"
-                                                                style={{ cursor: "pointer" }}
+                                                                style={{ cursor: "default" }}
                                                             />
-                                                        </Link>
+                                                        )}
                                                     </td>
                                                     <td className="align-middle">
                                                         <div>
@@ -371,7 +386,7 @@ export default function Profile() {
                                                         </div>
                                                     </td>
                                                     {isSelf && <td className="align-middle text-end">
-                                                        <Button variant="outline-secondary" size="sm" onClick={() => unfollowUser(user._id)}>
+                                                        <Button variant="outline-secondary" size="sm" onClick={() => unfollowUser(user._id !== null ? user._id : user?.original_followed_id)}>
                                                             Unfollow
                                                         </Button>
                                                     </td>}
@@ -400,22 +415,38 @@ export default function Profile() {
                                             profile.followers.map((user: any) => (
                                                 <tr key={user._id}>
                                                     <td className="align-middle" style={{ width: '80px' }}>
-                                                        <Link to={`/Account/profile/${user._id}`}>
+                                                        {user._id ? (
+                                                            <Link to={`/Account/profile/${user._id}`}>
+                                                                <img
+                                                                    src={`/avatar/${user.avatar}.png` || "/avatar/default.png"}
+                                                                    alt="User Avatar"
+                                                                    className="rounded-circle"
+                                                                    width="50"
+                                                                    height="50"
+                                                                    style={{ cursor: "pointer" }}
+                                                                />
+                                                            </Link>
+                                                        ) : (
                                                             <img
                                                                 src={`/avatar/${user.avatar}.png` || "/avatar/default.png"}
                                                                 alt="User Avatar"
                                                                 className="rounded-circle"
                                                                 width="50"
                                                                 height="50"
-                                                                style={{ cursor: "pointer" }}
+                                                                style={{ cursor: "default" }}
                                                             />
-                                                        </Link>
+                                                        )}
                                                     </td>
                                                     <td className="align-middle">
                                                         <div>
                                                             <h6 className="mb-1">{user.username}</h6>
                                                         </div>
                                                     </td>
+                                                    {isSelf && user.original_follower_id && <td className="align-middle text-end">
+                                                        <Button variant="outline-danger" size="sm" onClick={() => deleteFollower(user.original_follower_id)}>
+                                                            Clear
+                                                        </Button>
+                                                    </td>}
                                                 </tr>
                                             ))
                                         ) : (

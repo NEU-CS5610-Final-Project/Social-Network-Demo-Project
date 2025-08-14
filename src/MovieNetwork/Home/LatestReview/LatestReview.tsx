@@ -144,7 +144,7 @@ export default function LatestReview({ limit = 5 }: { limit?: number }) {
                 <div className="d-flex gap-3">
                   {/* Avatar */}
                   <img
-                    src={`/avatar/${r.author?.avatar}.png` || "/avatar/default.png"}
+                    src={`/avatar/${r.author?.avatar || 'default'}.png`}
                     alt={r.author?.username || "User"}
                     className="rounded-circle flex-shrink-0 border border-1 border-light"
                     width={56}
@@ -156,7 +156,7 @@ export default function LatestReview({ limit = 5 }: { limit?: number }) {
                   <div className="flex-grow-1">
                     {/* Top line: username + time + movie name */}
                     <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
-                      <strong className="me-1">{r.author?.username ?? "Unknown"}</strong>
+                      <strong className="me-1">{r.author?.username ?? "Unknown User"}</strong>
                       <span className="badge bg-secondary-subtle text-secondary-emphasis">
                         {timeAgo(r.update_time)}
                       </span>

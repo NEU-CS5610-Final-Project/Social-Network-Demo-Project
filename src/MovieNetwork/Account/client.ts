@@ -70,3 +70,8 @@ export const fetchUsersByName = async (name: string) => {
     const response = await axiosWithCredentials.get(`${USERS_API}/search`, { params: { name } });
     return response.data;
 };
+
+export const deleteFollower = async (followerId: string) => {
+    const response = await axiosWithCredentials.delete(`${FOLLOW_API}/${followerId}/follower`);
+    return response.data;
+};
