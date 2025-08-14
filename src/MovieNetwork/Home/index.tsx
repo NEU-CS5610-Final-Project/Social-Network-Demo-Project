@@ -160,7 +160,7 @@ export default function Home() {
                                 <div className="input-group">
                                     <select
                                         className="form-select form-select-lg"
-                                        style={{ maxWidth: "120px" }}
+                                        style={{ maxWidth: "125px" }}
                                         value={searchType}
                                         onChange={(e) => setSearchType(e.target.value as "movies" | "users")}
                                         disabled={isSearching}
