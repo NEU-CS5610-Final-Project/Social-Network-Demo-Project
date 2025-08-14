@@ -7,13 +7,21 @@ import { Link, useNavigate } from "react-router-dom";
 
 export default function Signin() {
     const [credentials, setCredentials] = useState<any>({});
+    const [signinError, setSigninError] = useState<string>("");
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const signin = async () => {
-        const user = await client.signin(credentials);
-        if (!user) return;
-        dispatch(setCurrentUser(user));
-        navigate(`/Account/profile/${user._id}`);
+        try {
+            const user = await client.signin(credentials);
+            if (!user) {
+                return;
+            }
+            dispatch(setCurrentUser(user));
+            navigate(`/Account/profile/${user._id}`);
+        }
+        catch (error: any) {
+            setSigninError(error.response.data.message || "Failed to sign in.");
+        }
     };
     return (
         <div
@@ -22,6 +30,11 @@ export default function Signin() {
             <Card style={{ width: "22rem" }} className="shadow">
                 <Card.Body>
                     <Card.Title className="text-center mb-4">Sign In</Card.Title>
+                    {signinError && (
+                        <div className="alert alert-danger" role="alert">
+                            {signinError}
+                        </div>
+                    )}
                     <Form>
                         <div className="mb-3">
                             <label htmlFor="username" className="form-label">Username</label>

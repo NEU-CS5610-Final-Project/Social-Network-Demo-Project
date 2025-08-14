@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import * as client from "./client";
 import * as userClient from "../Account/client";
 import MovieActions from "./MovieActions";
-import { BiLike, BiSolidLike } from "react-icons/bi";
+import { BiLike, BiPencil, BiSolidLike, BiTrash } from "react-icons/bi";
 
 type Review = {
   _id: string;
@@ -34,6 +34,9 @@ export default function MovieReviews({ reviews, movieId }: { reviews: Review[]; 
   const [submitting, setSubmitting] = useState(false);
   const [list, setList] = useState<ReviewWithUser[]>(reviews || []);
   const [votedReviews, setVotedReviews] = useState<any>([]);
+  const [updateContent, setUpdateContent] = useState<string>("");
+  const [isEditingReview, setIsEditingReview] = useState<boolean>(false);
+  const [editingReviewID, setEditingReviewID] = useState<string | null>(null);
 
   // Get comment user info
   const fetchUserInfo = async (userId: string): Promise<User | null> => {
@@ -126,6 +129,31 @@ export default function MovieReviews({ reviews, movieId }: { reviews: Review[]; 
     }
   };
 
+  const deleteReview = async (reviewId: string) => {
+    if (!currentUser?._id) return;
+    try {
+      await client.deleteReview(reviewId);
+      setList((prevList) => prevList.filter((r) => r._id !== reviewId));
+    } catch (error) {
+      console.error("Failed to delete review:", error);
+    }
+  };
+
+  const saveReview = async (rid: string, content: string) => {
+    if (!currentUser?._id) return;
+    try {
+      await client.updateReview(rid, { content: content });
+      setList((prevList) =>
+        prevList.map((r) => (r._id === rid ? { ...r, content } : r))
+      );
+      setIsEditingReview(false);
+      setEditingReviewID(null);
+      setUpdateContent("");
+    } catch (error) {
+      console.error("Failed to save review:", error);
+    }
+  };
+
   useEffect(() => {
     enrichReviewsWithUserInfo();
     fetchVotedReviews();
@@ -199,19 +227,54 @@ export default function MovieReviews({ reviews, movieId }: { reviews: Review[]; 
                   </div>
                   <div className="flex-grow-1">
                     <div
-                      className="fw-bold"
-                      onClick={() => r.user?._id && navigateToUserProfile(r.user._id)}
-                      style={{ cursor: "pointer" }}
-                    >
+                      className="fw-bold">
                       {r.user?.username || "Unknown User"}
                     </div>
                   </div>
+                  {(isSignedIn && r.user?._id === currentUser?._id && !isEditingReview) && (
+                    <button className="btn btn-link text-primary p-0 ms-2" onClick={() => {
+                      setIsEditingReview(true);
+                      setEditingReviewID(r._id);
+                      setUpdateContent(r.content);
+                    }} style={{ textDecoration: "none" }}>
+                      <BiPencil className="fs-4" />
+                    </button>
+                  )}
+                  {((isSignedIn && r.user?._id === currentUser?._id) || currentUser.role === "ADMIN") && (
+                    <button
+                      className="btn btn-link text-danger p-0 ms-2"
+                      onClick={() => deleteReview(r._id)}
+                      style={{ textDecoration: "none" }}>
+                      <BiTrash className="fs-4" />
+                    </button>
+                  )}
                 </div>
 
-                <div style={{ whiteSpace: "pre-wrap" }} className="ms-2 mb-2">{r.content}</div>
+                {(!isEditingReview || editingReviewID !== r._id) ? (<div style={{ whiteSpace: "pre-wrap" }} className="ms-2 mb-2">{r.content}</div>) : (
+                  <div className="ms-2 mb-2">
+                    <textarea
+                      className="form-control"
+                      rows={3}
+                      value={updateContent}
+                      onChange={(e) => setUpdateContent(e.target.value)}
+                    />
+                    <div className="mt-2 d-flex justify-content-end">
+                      <button className="btn btn-secondary me-2" onClick={() => {
+                        setIsEditingReview(false);
+                        setEditingReviewID(null);
+                        setUpdateContent("");
+                      }}>
+                        Cancel
+                      </button>
+                      <button className="btn btn-success" onClick={() => saveReview(r._id, updateContent)} disabled={submitting || !updateContent.trim()}>
+                        Update
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* vote button */}
-                {isSignedIn && <div className="d-flex justify-content-between align-items-center mt-2">
+                {isSignedIn && (!isEditingReview || editingReviewID !== r._id) && <div className="d-flex justify-content-between align-items-center mt-2">
                   <small className="text-muted">
                     <i className="bi bi-clock me-1"></i>
                     {formatReviewDate(r.update_time)}
