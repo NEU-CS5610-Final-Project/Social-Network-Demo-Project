@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getFollowingReviews } from "./Client";
+import { getMovieDetails } from "../../MovieDetails/client";
 
 type Review = {
   _id: string;
@@ -9,6 +10,7 @@ type Review = {
   movie_id: string;
   update_time?: string;
   author: { _id: string; username: string; avatar?: string };
+  movie?: { title: string; id: string };
 };
 
 function timeAgo(iso?: string) {
@@ -42,15 +44,40 @@ export default function LatestReview({ limit = 5 }: { limit?: number }) {
     let mounted = true;
     (async () => {
       try {
-        // 多取一些，避免“View all”时再次请求
+        // 多取一些，避免"View all"时再次请求
         const list = await getFollowingReviews(200);
         if (!mounted) return;
 
-        const in30 = list.filter((r: Review) => isWithinDays(r.update_time, 30));
-        const recentLimited = in30.slice(0, limit);
-        const olderCount = list.length - in30.length;
+        // 获取每个评论对应的电影信息
+        const reviewsWithMovies = await Promise.all(
+          list.map(async (review: Review) => {
+            try {
+              const movieDetails = await getMovieDetails(review.movie_id);
+              return {
+                ...review,
+                movie: {
+                  title: movieDetails.title,
+                  id: review.movie_id
+                }
+              };
+            } catch (error) {
+              console.error(`Failed to fetch movie details for ${review.movie_id}:`, error);
+              return {
+                ...review,
+                movie: {
+                  title: "Unknown Movie",
+                  id: review.movie_id
+                }
+              };
+            }
+          })
+        );
 
-        setAll(list);
+        const in30 = reviewsWithMovies.filter((r: Review) => isWithinDays(r.update_time, 30));
+        const recentLimited = in30.slice(0, limit);
+        const olderCount = reviewsWithMovies.length - in30.length;
+
+        setAll(reviewsWithMovies);
         setRecent(recentLimited);
         setHiddenCount(Math.max(olderCount, 0));
         setUnauthed(false);
@@ -117,31 +144,30 @@ export default function LatestReview({ limit = 5 }: { limit?: number }) {
                 <div className="d-flex gap-3">
                   {/* Avatar */}
                   <img
-                    src={`/avatar/${r.author?.avatar}.png` || "https://via.placeholder.com/56?text=U"}
+                    src={`/avatar/${r.author?.avatar}.png` || "/avatar/default.png"}
                     alt={r.author?.username || "User"}
-                    className="rounded-circle flex-shrink-0"
+                    className="rounded-circle flex-shrink-0 border border-1 border-light"
                     width={56}
                     height={56}
-                    style={{ objectFit: "cover" }}
+                    style={{ backgroundColor: "white" }}
                   />
 
                   {/* Right side */}
                   <div className="flex-grow-1">
-                    {/* Top line: username + time + button */}
+                    {/* Top line: username + time + movie name */}
                     <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
                       <strong className="me-1">{r.author?.username ?? "Unknown"}</strong>
                       <span className="badge bg-secondary-subtle text-secondary-emphasis">
                         {timeAgo(r.update_time)}
                       </span>
-
-                      <div className="ms-auto">
-                        <Link
-                          to={`/movie/${r.movie_id}`}
-                          className="btn btn-sm btn-outline-info"
-                        >
-                          View movie
-                        </Link>
-                      </div>
+                      <span className="text-muted">•</span>
+                      <Link
+                        to={`/movie/${r.movie_id}`}
+                        className="text-decoration-none fw-medium border border-secondary rounded px-2 py-0.8"
+                        style={{ fontSize: "0.9rem", color: "white" }}
+                      >
+                        {r.movie?.title || "Unknown Movie"}
+                      </Link>
                     </div>
 
                     {/* Content */}
