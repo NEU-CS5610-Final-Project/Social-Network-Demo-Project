@@ -240,7 +240,7 @@ export default function MovieReviews({ reviews, movieId }: { reviews: Review[]; 
                       <BiPencil className="fs-4" />
                     </button>
                   )}
-                  {((isSignedIn && r.user?._id === currentUser?._id) || currentUser.role === "ADMIN") && (
+                  {((isSignedIn && r.user?._id === currentUser?._id) || currentUser?.role === "ADMIN") && (
                     <button
                       className="btn btn-link text-danger p-0 ms-2"
                       onClick={() => deleteReview(r._id)}
