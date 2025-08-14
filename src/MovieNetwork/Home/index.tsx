@@ -359,9 +359,9 @@ export default function Home() {
                                                         />
                                                     </div>
                                                     <h5 className="card-title">{user.username}</h5>
-                                                    <p className="card-text text-muted">
+                                                    {user.role && (<p className="card-text text-muted">
                                                         Role: {user.role || 'User'}
-                                                    </p>
+                                                    </p>)}
                                                     {user.join_date && (
                                                         <p className="card-text small text-muted">
                                                             Joined: {new Date(user.join_date).toLocaleDateString('en-US')}
