@@ -20,13 +20,18 @@ export default function Signup() {
             "review": 0
         }
     });
+    const [signupError, setSignupError] = useState<string>("");
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const signup = async () => {
-        const user = await client.signup(credentials);
-        if (!user) return;
-        dispatch(setCurrentUser(user));
-        navigate(`/Account/profile/${user._id}`);
+        try {
+            const user = await client.signup(credentials);
+            if (!user) return;
+            dispatch(setCurrentUser(user));
+            navigate(`/Account/profile/${user._id}`);
+        } catch (error: any) {
+            setSignupError(error.response.data.message || "Failed to sign up.");
+        }
     };
     return (
         <div
@@ -35,6 +40,11 @@ export default function Signup() {
             <Card style={{ width: "22rem" }} className="shadow">
                 <Card.Body>
                     <Card.Title className="text-center mb-4">Sign Up</Card.Title>
+                    {signupError && (
+                        <div className="alert alert-danger" role="alert">
+                            {signupError}
+                        </div>
+                    )}
                     <Form>
                         <div className="mb-3">
                             <label htmlFor="username" className="form-label">Username</label>

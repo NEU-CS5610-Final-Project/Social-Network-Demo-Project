@@ -299,7 +299,10 @@ export default function MovieInfo({ movie }: { movie: MovieDetailsData }) {
               </div>
             ) : (
               <div>
-
+                <div className="mt-3">
+                  <strong>Average Rating: </strong>
+                  {averageRating > 0 ? averageRating.toFixed(1) : "N/A"}
+                </div>
               </div>
             )}
           </div>

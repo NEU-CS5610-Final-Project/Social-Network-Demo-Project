@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { searchMovies, getPosterUrl, type MovieSearchResult } from "../Search/client";
 import { fetchUsersByName } from "../Account/client";
-import TrendingNow from "./TrendingNow";
-// import TestLatestMovies from "./TestTestLatestMovies";
+import TrendingNow from "./TrendingMovies/TrendingNow";
+import LatestReview from "./LatestReview/LatestReview";
 
 export default function Home() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -380,6 +380,7 @@ export default function Home() {
                         < section >
                             <h2 className="text-center mb-4">Trending Now</h2>
                             <TrendingNow />
+                            <LatestReview limit={5} />
                         </section>
                     )}
                 </div>
