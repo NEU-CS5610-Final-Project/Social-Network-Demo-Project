@@ -18,6 +18,7 @@ export default function Profile() {
     const [isFollowed, setFollowed] = useState(false);
     const [editProfile, setEditProfile] = useState<any>({});
     const [passwordErrorMessage, setPasswordErrorMessage] = useState<string>("");
+    const [privacyChangeMessage, setPrivacyChangeMessage] = useState<string>("");
     const formatReviewDate = (reviewDate: string | Date) => {
         if (!reviewDate) return 'Recent';
 
@@ -134,11 +135,11 @@ export default function Profile() {
                         {isSelf ? <h2>My Profile</h2> : (
                             <>
                                 <h2>{profile.username}'s Profile</h2>
-                                {isFollowed ? (
+                                {!!currentUser && (isFollowed ? (
                                     <Button className="me-2" variant="warning" onClick={() => unfollowUser(profile._id)}>Unfollow</Button>
                                 ) : (
                                     <Button className="me-2" variant="success" onClick={() => followUser()}>Follow</Button>
-                                )}
+                                ))}
                             </>
                         )}
                     </div>
@@ -250,10 +251,9 @@ export default function Profile() {
                                     <label className="col-2">Username</label>
                                     <Form.Control
                                         type="text"
-                                        value={editProfile.username || profile.username}
-                                        readOnly={!editable}
-                                        className={editable ? "" : "bg-light"}
-                                        onChange={(e) => setEditProfile({ ...editProfile, username: e.target.value })} />
+                                        value={profile.username}
+                                        readOnly
+                                        className="bg-light" />
                                 </div>
                                 <div className="d-flex mb-2">
                                     <label className="col-2">Email</label>
@@ -469,9 +469,14 @@ export default function Profile() {
                                 <Row className="border-bottom mb-2">
                                     <div className="d-flex justify-content-between align-items-center mb-4">
                                         <h3>Privacy Settings</h3>
-                                        <Button variant="outline-success" onClick={saveProfile}>Save Changes</Button>
+                                        <Button variant="outline-success" onClick={() => { saveProfile(); setPrivacyChangeMessage("Privacy settings updated successfully."); }}>Save Changes</Button>
                                     </div>
                                     <br />
+                                    {privacyChangeMessage && (
+                                        <div className={`alert ${"alert-success"} ms-2`} role="alert" style={{ width: "500px" }}>
+                                            {privacyChangeMessage}
+                                        </div>
+                                    )}
                                     <div className="d-flex mb-2">
                                         <label className="col-2">Email</label>
                                         <select
