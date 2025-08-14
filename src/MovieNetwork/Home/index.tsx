@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { searchMovies, getPosterUrl, type MovieSearchResult } from "../Search/client";
 import TrendingNow from "./TrendingMovies/TrendingNow";
 import LatestReview from "./LatestReview/LatestReview";
+import Footer from "./Footer/footer";
 
 export default function Home() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -301,6 +302,7 @@ export default function Home() {
                     )}
                 </div>
             </main>
+            <Footer />
         </div>
     );
 }
