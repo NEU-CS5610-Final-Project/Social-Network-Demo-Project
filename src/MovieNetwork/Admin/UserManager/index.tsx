@@ -46,8 +46,16 @@ export default function UserManager() {
     const sortResults = (newSortingType: any) => {
         const { field, order } = newSortingType;
         const sortedResults = [...searchResults].sort((a, b) => {
-            if (a[field] < b[field]) return order === "ASC" ? -1 : 1;
-            if (a[field] > b[field]) return order === "ASC" ? 1 : -1;
+            let aValue = a[field];
+            let bValue = b[field];
+
+            if (typeof aValue === 'string' && typeof bValue === 'string') {
+                aValue = aValue.toLowerCase();
+                bValue = bValue.toLowerCase();
+            }
+
+            if (aValue < bValue) return order === "ASC" ? -1 : 1;
+            if (aValue > bValue) return order === "ASC" ? 1 : -1;
             return 0;
         });
         setSearchResults(sortedResults);
@@ -160,12 +168,10 @@ export default function UserManager() {
                                             </div>
                                         </td>
                                         <td className="px-4 py-3 text-center">
-                                            {new Date(user.join_date).toLocaleString('en-CA', {
+                                            {new Date(user.join_date).toLocaleDateString('en-CA', {
                                                 year: 'numeric',
                                                 month: 'long',
                                                 day: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
                                             })}
                                         </td>
                                         <td valign="middle">
