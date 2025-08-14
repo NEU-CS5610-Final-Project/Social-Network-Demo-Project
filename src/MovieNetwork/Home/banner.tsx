@@ -45,8 +45,8 @@ export default function Banner() {
                 <div className="navbar-brand m-0">
                     <Link to="/">
                         <img
-                            src="https://via.placeholder.com/150x50/007bff/FFFFFF?text=LOGO"
-                            alt="Logo"
+                            src="/Movify_logo/movify_logo_dark.png"
+                            alt="Movify Logo"
                             height="50" />
                     </Link>
                 </div>
