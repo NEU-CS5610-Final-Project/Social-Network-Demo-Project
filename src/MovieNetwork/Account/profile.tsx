@@ -4,9 +4,10 @@ import * as client from "./client"
 import { Button, Card, Col, Container, Row, Table } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { BsFillInfoSquareFill } from "react-icons/bs";
-import { FaShieldAlt, FaHeart, FaUsers, FaCommentDots } from "react-icons/fa";
+import { FaShieldAlt, FaHeart, FaUsers, FaCommentDots, FaExternalLinkAlt } from "react-icons/fa";
 import { FaUserCheck } from "react-icons/fa6";
 import { Form } from "react-bootstrap";
+import { MdManageAccounts } from "react-icons/md";
 
 export default function Profile() {
     const { currentUser } = useSelector((state: any) => state.accountReducer);
@@ -231,6 +232,19 @@ export default function Profile() {
                                 Privacy Settings
                             </div>
                         </div>}
+                        {isSelf && currentUser.role === "ADMIN" && (
+                            <Link to="/Admin/UserManager" className="text-decoration-none text-dark">
+                                <div className="d-flex align-items-center p-2 rounded" style={{
+                                    transition: 'background-color 0.2s ease', cursor: "pointer"
+                                }}
+                                    onMouseEnter={(e) => (e.target as HTMLElement).style.backgroundColor = '#e9ecef'}
+                                    onMouseLeave={(e) => (e.target as HTMLElement).style.backgroundColor = 'transparent'}>
+                                    <MdManageAccounts className="fs-5 me-2" />
+                                    Manage Users
+                                    <FaExternalLinkAlt className="ms-2" style={{ fontSize: '0.8em', color: 'gray' }} />
+                                </div>
+                            </Link>
+                        )}
                     </Col>
                     <Col>
                         {page === "info" && (
