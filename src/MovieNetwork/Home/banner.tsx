@@ -10,6 +10,7 @@ export default function Banner() {
     const dispatch = useDispatch();
     const { currentUser } = useSelector((state: any) => state.accountReducer);
     const [searchQuery, setSearchQuery] = useState("");
+    const [searchType, setSearchType] = useState<"movies" | "users">("movies");
     const location = useLocation();
     const isAccountPage = location.pathname.includes("/Account");
     const isHomePage = location.pathname === "/" || location.pathname === "/home";
@@ -27,8 +28,8 @@ export default function Banner() {
             return;
         }
 
-        // Navigate to home page with search query
-        navigate(`/?q=${encodeURIComponent(searchQuery.trim())}&page=1`);
+        // Navigate to home page with search query and type
+        navigate(`/?q=${encodeURIComponent(searchQuery.trim())}&page=1&type=${searchType}`);
         setSearchQuery(""); // Clear search input after navigation
     };
 
@@ -38,7 +39,7 @@ export default function Banner() {
         }
     };
     return (
-        <Navbar bg="light" className="shadow-sm">
+        <Navbar className="shadow-sm navbar-dark" style={{ backgroundColor: "#0f1419" }}>
             <Container className="d-flex justify-content-between align-items-center">
                 {/* Logo */}
                 <div className="navbar-brand m-0">
@@ -52,12 +53,21 @@ export default function Banner() {
 
                 {/* Search Bar - Only show when not on home page or account page */}
                 {!isHomePage && !isAccountPage && (
-                    <div className="flex-grow-1 mx-4" style={{ maxWidth: "500px" }}>
+                    <div className="flex-grow-1 mx-4" style={{ maxWidth: "600px" }}>
                         <Form onSubmit={handleSearch}>
                             <InputGroup>
+                                <select
+                                    className="form-select"
+                                    style={{ maxWidth: "105px" }}
+                                    value={searchType}
+                                    onChange={(e) => setSearchType(e.target.value as "movies" | "users")}
+                                >
+                                    <option value="movies">Movies</option>
+                                    <option value="users">Users</option>
+                                </select>
                                 <Form.Control
                                     type="text"
-                                    placeholder="Search movies..."
+                                    placeholder={`Search ${searchType}...`}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     onKeyPress={handleKeyPress}
@@ -84,14 +94,14 @@ export default function Banner() {
                                 <img
                                     src={`/avatar/${currentUser.avatar}.png` || "/avatar/default.png"}
                                     alt="User Avatar"
-                                    className="rounded-circle"
+                                    className="rounded-circle border border-1 border-light"
                                     width="40"
                                     height="40"
-                                    style={{ cursor: "pointer" }} />
+                                    style={{ cursor: "pointer", backgroundColor: "white" }} />
                             </Link>
                             <button
                                 onClick={Signout}
-                                className="btn btn-outline-secondary ms-2">
+                                className="btn btn-outline-light ms-2">
                                 Logout
                             </button>
                         </div>

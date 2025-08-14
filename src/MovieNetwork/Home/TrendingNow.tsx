@@ -62,17 +62,16 @@ export default function TrendingNow() {
                   )}
                 </div>
 
-                <div className="card-body px-0">
+                <div className="card-body px-2">
                   <div className="d-flex align-items-baseline gap-2">
-                    <Link
-                     to={`/movie/${m.id}`}
-                      className="text-info small text-truncate flex-grow-1"
+                    <div
+                      className="text-white small text-truncate flex-grow-1"
                       title={m.title}
                     >
                       {m.title}
-                    </Link>
+                    </div>
                     {typeof m.vote_average === "number" && (
-                      <span className="small" style={{ color: "#f2b01e" }}>
+                      <span className="small text-white">
                         {m.vote_average.toFixed(1)}
                       </span>
                     )}

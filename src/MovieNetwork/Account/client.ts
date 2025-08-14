@@ -65,3 +65,8 @@ export const changePassword = async (passwordData: any, uid: string) => {
     const response = await axiosWithCredentials.put(`${USERS_API}/${uid}/password`, passwordData);
     return response.data;
 };
+
+export const fetchUsersByName = async (name: string) => {
+    const response = await axiosWithCredentials.get(`${USERS_API}/search`, { params: { name } });
+    return response.data;
+};
